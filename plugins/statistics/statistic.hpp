@@ -219,7 +219,7 @@ namespace viennamesh
         }
 
 
-        /*
+        /*NumericT
         Calculates min, max, mean, median of the cell shape quality metric given via the Functor functor.
         */
         template<typename MeshT, typename FunctorT>
@@ -295,6 +295,7 @@ namespace viennamesh
         template <typename MeshT>
         void mesh_comparison_quality(MeshT const & mesh, MeshT const & mesh_orig)
         {
+
 
             //Comparison metrics are implemented using libigl, which uses matrices provided by Eigen library.
             Eigen::Matrix<NumericT, Eigen::Dynamic, Eigen::Dynamic> Vertices, Vertices_orig;

@@ -3,5 +3,6 @@
 include_directories(external/)
 
 VIENNAMESH_ADD_PLUGIN(viennamesh-module-statistics plugin.cpp
-                      make_statistic.cpp
-                      mesh_information.cpp)
+                      #make_statistic.cpp
+                      #mesh_information.cpp
+		      cgal_first_test.cpp)

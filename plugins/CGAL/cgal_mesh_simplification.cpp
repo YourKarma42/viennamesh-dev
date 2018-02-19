@@ -95,6 +95,8 @@ namespace viennamesh
         int smart_edge_collapse (cgal::polyhedron_surface_mesh & surface_mesh, STOP stop, COST cost, PLACEMENT placement )
         {
             print_selected_parameters (stop, cost, placement);
+
+            info(5) << "cost:        " << std::endl;
             return SMS::edge_collapse
                    (surface_mesh
                     ,stop
@@ -108,7 +110,7 @@ namespace viennamesh
         template <class STOP, class COST >
         int smart_edge_collapse (cgal::polyhedron_surface_mesh & surface_mesh, STOP stop, COST cost, void* placement)
         {
-            (void) placement; // has no effect, just here to avoid compiler warnings about unused parameter
+            (void) placement; // has no effect, juscgal_mesh_simplification.hppt here to avoid compiler warnings about unused parameter
 
             print_selected_parameters (stop, cost, placement);
             return SMS::edge_collapse
@@ -381,6 +383,7 @@ namespace viennamesh
                         }
                         else //standard placement
                         {
+
                             SMS::LindstromTurk_placement<cgal::polyhedron_surface_mesh> placement(SMS::LindstromTurk_params(volume_weight,boundary_weight,shape_weight));
                             removed_edges = smart_edge_collapse (my_mesh, stop, cost, placement);
                         }
@@ -399,6 +402,7 @@ namespace viennamesh
                         }
                         else
                         {
+
                             SMS::Midpoint_placement <cgal::polyhedron_surface_mesh> placement;
                             removed_edges = smart_edge_collapse (my_mesh, stop, cost, placement);
                         }
@@ -419,7 +423,6 @@ namespace viennamesh
                         }
                         else //standard placement
                         {
-
 
                             void* placement = NULL;
                             removed_edges = smart_edge_collapse (my_mesh, stop, cost, placement);
@@ -463,6 +466,7 @@ namespace viennamesh
                         }
                         else
                         {
+
                             SMS::Midpoint_placement <cgal::polyhedron_surface_mesh> placement;
                             removed_edges = smart_edge_collapse (my_mesh, stop, cost, placement);
                         }
@@ -507,6 +511,7 @@ namespace viennamesh
                         }
                         else
                         {
+      
                             SMS::LindstromTurk_placement<cgal::polyhedron_surface_mesh> placement(SMS::LindstromTurk_params(volume_weight,boundary_weight,shape_weight));
                             removed_edges = smart_edge_collapse (my_mesh, stop, cost, placement);
                         }
@@ -529,6 +534,7 @@ namespace viennamesh
                         }
                         else
                         {
+
                             SMS::Midpoint_placement <cgal::polyhedron_surface_mesh> placement;
                             removed_edges = smart_edge_collapse (my_mesh, stop, cost, placement);
                         }
@@ -600,6 +606,7 @@ namespace viennamesh
                         }
                         else
                         {
+                            info(5) << "Hier sind wir:        " <<  std::endl;
 
                             SMS::LindstromTurk_placement<cgal::polyhedron_surface_mesh> placement(SMS::LindstromTurk_params(volume_weight,boundary_weight,shape_weight));
                             removed_edges = smart_edge_collapse (my_mesh, stop, cost, placement);

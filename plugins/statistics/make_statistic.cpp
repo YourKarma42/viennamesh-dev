@@ -110,7 +110,7 @@ namespace viennamesh
         }
         else
         {
-            //If histograms are about to be added again, returing false here will prevent the basic statistics features from working!
+            //If histograms are about to be added againNumericT, returing false here will prevent the basic statistics features from working!
             error(1) << "No histogram configuration provided" << std::endl;
             return false;
         }

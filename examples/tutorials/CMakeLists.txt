@@ -53,3 +53,10 @@ target_link_libraries(pragmatic_metis_partitioner ${VTK_LIBRARIES})
 add_executable(pragmatic_refine_multi_region_mesh pragmatic_refine_multi_region_mesh.cpp)
 target_link_libraries(pragmatic_refine_multi_region_mesh viennameshpp)
 target_link_libraries(pragmatic_refine_multi_region_mesh ${VTK_LIBRARIES})
+
+add_executable(test test.cpp)
+target_link_libraries(test viennameshpp)
+
+add_executable(cgal_mesh_simplify_curve cgal_mesh_simplify_curve.cpp)
+target_link_libraries(cgal_mesh_simplify_curve viennameshpp)
+

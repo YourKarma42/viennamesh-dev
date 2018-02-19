@@ -34,18 +34,24 @@ public:
 
   typedef ECM_ ECM;
 
+  typedef typename ECM::Vertex::Halfedge_around_vertex_circulator Vertex_circulator;
+
   typedef typename ECM::Point_3 Point_3;
 
-  std::unordered_map<Point_3, std::pair<double, double>, viennamesh::cgal::Point_3_Hash, viennamesh::cgal::Point_3_Equal>   & curvatures;
+  std::unordered_map<Point_3, viennamesh::cgal::vertex_statistics, viennamesh::cgal::Point_3_Hash, viennamesh::cgal::Point_3_Equal>   & curvatures;
 
   std::vector<double> & times;
+  
+  int & edge_edges;
 
 public:
 
  int b;
 
-  Curvature_cost(std::unordered_map<Point_3, std::pair<double, double>, viennamesh::cgal::Point_3_Hash, viennamesh::cgal::Point_3_Equal> & c, std::vector<double> &t) 
-  : curvatures(c), times(t){}
+  Curvature_cost(std::unordered_map<Point_3, viennamesh::cgal::vertex_statistics, viennamesh::cgal::Point_3_Hash, viennamesh::cgal::Point_3_Equal> & c, 
+  std::vector<double> &t,
+  int & ee) 
+  : curvatures(c), times(t), edge_edges(ee){}
 
   //Curvature_cost(int a) : b(a) {}
 
@@ -57,11 +63,10 @@ public:
     typedef optional<typename Profile::FT> result_type;
 
 
-    //_________________________Testing_Area_______________________________________________________
     //costs File is deleted in cgal_simplify_curve.cpp
 
 
-    double flat_boundary = 0.1;
+    double flat_boundary = 0.001;
 
     double curve_p0 = 0.0;
     double curve_p1 = 0.0;
@@ -78,9 +83,9 @@ public:
     ECM& mesh = aProfile.surface_mesh();
 
 
-    // nach dem collapse ändern sich curvatures  um den collapsten punkt?
-    // neu berechnen?
-    // überlegen wie genau das passiert
+    // nach dem collapse ändern sich curvatures  um den collapsten punkt
+    // cgal berücksichtigt das
+  
 
     //auto start = std::chrono::high_resolution_clock::now();
 
@@ -89,9 +94,9 @@ public:
     if(current_point != curvatures.end()){
         //curvature was already calculated
 
-        curves_p0[0] = (current_point->second).first;
+        curves_p0[0] = (current_point->second).curvature_1;
 
-        curves_p0[1] = (current_point->second).second;
+        curves_p0[1] = (current_point->second).curvature_2;
 
         curve_p0 =  curves_p0[0]*curves_p0[1]; 
 
@@ -105,8 +110,8 @@ public:
 
         curve_p0=curves_p0[0]*curves_p0[1];
 
-        curvatures[aProfile.p0()].first = curves_p0[0];
-        curvatures[aProfile.p0()].second = curves_p0[1];
+        curvatures[aProfile.p0()].curvature_1 = curves_p0[0];
+        curvatures[aProfile.p0()].curvature_2 = curves_p0[1];
 
     }  
     
@@ -114,9 +119,9 @@ public:
     if(current_point != curvatures.end()){
         //curvature was already calculated
 
-        curves_p1[0] = (current_point->second).first;
+        curves_p1[0] = (current_point->second).curvature_1;
 
-        curves_p1[1] = (current_point->second).second;
+        curves_p1[1] = (current_point->second).curvature_2;
 
         curve_p1=curves_p1[0]*curves_p1[1];
 
@@ -130,8 +135,8 @@ public:
 
         curve_p1=curves_p1[0]*curves_p1[1];
 
-        curvatures[aProfile.p1()].first = curves_p1[0];
-        curvatures[aProfile.p1()].second = curves_p1[1];
+        curvatures[aProfile.p1()].curvature_1 = curves_p1[0];
+        curvatures[aProfile.p1()].curvature_2 = curves_p1[1];
 
     }  
 
@@ -140,33 +145,49 @@ public:
     //times.push_back(std::chrono::duration_cast<std::chrono::microseconds>(finish-start).count());
     
 
-    /*std::ofstream myfile;
+   /* std::ofstream myfile;
     myfile.open ("costs.txt", std::ios_base::app);
     if (myfile.is_open()){
 
       //myfile << c << "    " << ((a+b)/2) << "\n";
 
      // if(a>1 && b >1)
-        myfile << abs(curves_p0[0] - curves_p1[0]) << "                 " << abs(curves_p0[1] - curves_p1[1]) << "\n";
+        myfile << abs(curves_p0[0]) << " " << abs(curves_p1[0]) << " " << abs(curves_p0[1]) << " " << abs(curves_p1[1]) << "\n";
 
       myfile.close();
     }*/
 
 
-    //_________________________END_Testing_Area_______________________________________________________
-
     //think about something with stop prediction right angles are canceled! 
 
-    if(abs(curve_p0) > flat_boundary || abs(curve_p1) > flat_boundary){
-      mod = 19.0;
+    double c1=0.0;
+
+    double c2=0.0;
+
+    if(fabs(curve_p0) > flat_boundary || fabs(curve_p1) > flat_boundary){
+
+      c1 = fabs(curve_p0);
+
+      c2 = fabs(curve_p1);
+
+      if(c1 >flat_boundary && c2 > flat_boundary){
+        mod = 19.0;
+      }
+      else{
+        mod = 32.0;
+      }  
+       
+
+       
     }
 
-    if(abs(curves_p0[0] - curves_p1[0]) <= 0.1 && abs(curves_p0[1] - curves_p1[1]) <= 0.1){
-      mod = 0;
-    }
+
 
     //the smaller the cost the earlier its coursed
-    return result_type(((abs(curve_p0)+abs(curve_p1))/2)+mod);
+
+    return result_type(((c1+c2)/2)+mod);
+    
+    //return result_type(((abs(curve_p0)+abs(curve_p1))/2)+mod);
 
 
   }
@@ -180,3 +201,85 @@ public:
 } //namespace CGAL
 
  
+
+
+
+     /* int not_flat = 3;
+
+      if(fabs(curve_p0) > flat_boundary && fabs(curve_p1) > flat_boundary){
+
+        Vertex_circulator vert_circ=(*(aProfile.v0())).vertex_begin(),end=vert_circ;
+
+        int not_flat = 0;
+        
+
+        edge_edges++;
+
+        //spielen das es eventuell anders geht (iteratoren)
+        //Optimierung überlegen algorithmisch die punkte erkennen die in beiden vertices vorhanden sind
+        do
+        {
+          //calculate curvature!
+
+          auto current_point = curvatures.find(vert_circ->vertex()->point());
+
+
+          if(current_point != curvatures.end()){
+
+            //calculate curvature and save it in the hashtable
+
+            //nicht curves_p1 verwenden
+            times.push_back(viennamesh::cgal::principal_curvatures(*(vert_circ->vertex()), mesh, curves_p1));
+
+            curvatures[vert_circ->vertex()->point()].first = curves_p1[0];
+            curvatures[vert_circ->vertex()->point()].second = curves_p1[1];
+
+          }  
+          if (fabs(((current_point->second).first * (current_point->second).second)) > flat_boundary){
+            not_flat++;
+          }
+
+          ++vert_circ;
+        }while(vert_circ!=end);
+
+        //check second point of edge
+        if(not_flat < 3){
+          not_flat = 0;
+
+          vert_circ=(*(aProfile.v1())).vertex_begin(),end=vert_circ;
+
+          do
+          {
+            //calculate curvature!
+
+            auto current_point = curvatures.find(vert_circ->vertex()->point());
+
+            if(current_point != curvatures.end()){
+
+            //calculate curvature and save it in the hashtable
+
+            //nicht curves_p1 verwenden
+            times.push_back(viennamesh::cgal::principal_curvatures(*(vert_circ->vertex()), mesh, curves_p1));
+
+            curvatures[vert_circ->vertex()->point()].first = curves_p1[0];
+            curvatures[vert_circ->vertex()->point()].second = curves_p1[1];
+
+          }  
+            if (fabs(((current_point->second).first * (current_point->second).second)) > flat_boundary){
+              not_flat++;
+            }
+
+            ++vert_circ;
+          }while(vert_circ!=end);
+
+        }
+      }
+
+      if(not_flat > 2){
+        mod = 19.0;
+      }
+      else{
+        curve_p0 = 0.0;
+        curve_p1 = 0.0;
+
+      }*/

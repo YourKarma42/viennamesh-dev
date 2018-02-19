@@ -18,7 +18,21 @@ namespace viennamesh
   namespace cgal
   {
 
+    // vertex handels sollten standardmäßig hasbar sein siehe
+    //https://doc.cgal.org/latest/Polyhedron/classCGAL_1_1Polyhedron__3.html
+    //All handles are model of LessThanComparable and Hashable, that is they can be used as keys in containers such as std::map and boost::unordered_map. 
+
     typedef polyhedron_surface_mesh::Point_3 Point_3;
+
+    struct vertex_statistics {
+
+        double curvature_1;
+
+        double curvature_2;
+
+        double gauss_curvature;
+
+    };
 
 
     typedef double FT;
@@ -44,7 +58,7 @@ namespace viennamesh
     
     };
 
-    std::string Hashtable_Statistics(std::unordered_map<Point_3, std::pair<double, double>, viennamesh::cgal::Point_3_Hash, viennamesh::cgal::Point_3_Equal> & m){
+    std::string Hashtable_Statistics(std::unordered_map<Point_3, viennamesh::cgal::vertex_statistics, viennamesh::cgal::Point_3_Hash, viennamesh::cgal::Point_3_Equal> & m){
         std::stringstream  out;
 
         int buckets=m.bucket_count();

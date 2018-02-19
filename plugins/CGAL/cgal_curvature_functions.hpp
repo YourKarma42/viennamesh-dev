@@ -169,7 +169,7 @@ namespace viennamesh
 
     }
 
-    std::string curvature_output(std::unordered_map<Point_3, std::pair<double, double>, viennamesh::cgal::Point_3_Hash, viennamesh::cgal::Point_3_Equal> & m){
+    std::string curvature_output(std::unordered_map<Point_3, viennamesh::cgal::vertex_statistics, viennamesh::cgal::Point_3_Hash, viennamesh::cgal::Point_3_Equal> & m){
         std::stringstream  out;
 
         double max_1 = 0.0;
@@ -179,17 +179,17 @@ namespace viennamesh
         double min_2 = 0.0;
 
         for ( auto &it : m ){
-            if((it.second).first > max_1)
-                max_1 = (it.second).first;
+            if((it.second).curvature_1 > max_1)
+                max_1 = (it.second).curvature_1;
             
-            if((it.second).second > max_2)
-                max_2 = (it.second).second;
+            if((it.second).curvature_2 > max_2)
+                max_2 = (it.second).curvature_2;
 
-            if((it.second).first < min_1)
-                min_1 = (it.second).first;
+            if((it.second).curvature_1 < min_1)
+                min_1 = (it.second).curvature_1;
             
-            if((it.second).second < min_2)
-                min_2 = (it.second).second;
+            if((it.second).curvature_2 < min_2)
+                min_2 = (it.second).curvature_2;
         }
 
         out << std::endl << "----------------++++++++++++++++++ curvatures ++++++++++++++++++----------------" << std::endl;

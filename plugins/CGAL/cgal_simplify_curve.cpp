@@ -186,21 +186,23 @@ namespace viennamesh
 
                 //create Hashtable to store curvatures
 
-                std::unordered_map<Point_3, std::pair<double, double>, Point_3_Hash, Point_3_Equal> curvatures;
+                std::unordered_map<Point_3, viennamesh::cgal::vertex_statistics, Point_3_Hash, Point_3_Equal> curvatures;
+
+                int edge_edges=0;
 
 
 
-                SMS::Curvature_placement<cgal::polyhedron_surface_mesh> placement_test; //atm midpoint
+                SMS::Curvature_placement<cgal::polyhedron_surface_mesh> placement_test(curvatures); //atm midpoint
 
                 SMS::LindstromTurk_placement<cgal::polyhedron_surface_mesh> placement(SMS::LindstromTurk_params(volume_weight,boundary_weight,shape_weight));
 
-                SMS::Curvature_cost<cgal::polyhedron_surface_mesh> cost_test(curvatures, time_for_curves); //atm my curve cost
+                SMS::Curvature_cost<cgal::polyhedron_surface_mesh> cost_test(curvatures, time_for_curves, edge_edges); //atm my curve cost
 
                 SMS::Curvature_stop_predicate<cgal::polyhedron_surface_mesh> stop_test( ratio_of_edges );
 
                 start = std::chrono::high_resolution_clock::now();
 
-                removed_edges = smart_edge_collapse(my_mesh, stop_test, cost_test, placement_test);
+                removed_edges = smart_edge_collapse(my_mesh, stop_test, cost_test, placement);
 
                 finish = std::chrono::high_resolution_clock::now();
 
@@ -210,6 +212,20 @@ namespace viennamesh
                 info(1) << Hashtable_Statistics(curvatures) << std::endl;
 
                 info(1) << curvature_output(curvatures) << std::endl;
+
+                info(1) << "!!!!!!!!!! Eck Kanten: " << edge_edges << std::endl;
+
+                /*std::ofstream myfile;
+                myfile.open ("costs.txt", std::ios_base::app);
+                if (myfile.is_open()){
+
+                    for ( auto &it : curvatures ){
+
+                        myfile << (it.second).first << " " << (it.second).second << "\n";
+                    }
+                    
+                    }
+                myfile.close();*/
 
 
             }

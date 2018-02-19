@@ -1,4 +1,10 @@
+#Eigen include path
+message(STATUS "Including Eigen from System path")
+INCLUDE_DIRECTORIES ( "/usr/include/eigen3" )
+
+
 set( CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS true )
+
 
 if ( COMMAND cmake_policy )
   cmake_policy( SET CMP0003 NEW )
@@ -24,4 +30,5 @@ VIENNAMESH_ADD_PLUGIN(cgal_module
  		      cgal_mesh.cpp
               	      cgal_mesh_simplification.cpp
 		      cgal_automatic_mesh_simplification.cpp
-                      cgal_mesh_simplification.cpp )
+		      cgal_curve.cpp
+		      cgal_simplify_curve.cpp)
