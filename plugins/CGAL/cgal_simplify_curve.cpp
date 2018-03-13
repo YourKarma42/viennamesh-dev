@@ -160,6 +160,10 @@ namespace viennamesh
 
             auto finish = std::chrono::high_resolution_clock::now();
 
+            //create Hashtable to store curvatures
+            //move into if statment
+            std::unordered_map<Point_3, viennamesh::cgal::vertex_statistics, Point_3_Hash, Point_3_Equal> curvatures;
+
 
             if(policy() == "lt"){
 
@@ -184,15 +188,13 @@ namespace viennamesh
 
 
 
-                //create Hashtable to store curvatures
 
-                std::unordered_map<Point_3, viennamesh::cgal::vertex_statistics, Point_3_Hash, Point_3_Equal> curvatures;
 
                 int edge_edges=0;
 
+                int ecke=0;
 
-
-                SMS::Curvature_placement<cgal::polyhedron_surface_mesh> placement_test(curvatures); //atm midpoint
+                SMS::Curvature_placement<cgal::polyhedron_surface_mesh> placement_test(curvatures, ecke); //atm midpoint
 
                 SMS::LindstromTurk_placement<cgal::polyhedron_surface_mesh> placement(SMS::LindstromTurk_params(volume_weight,boundary_weight,shape_weight));
 
@@ -202,7 +204,7 @@ namespace viennamesh
 
                 start = std::chrono::high_resolution_clock::now();
 
-                removed_edges = smart_edge_collapse(my_mesh, stop_test, cost_test, placement);
+                removed_edges = smart_edge_collapse(my_mesh, stop_test, cost_test, placement_test);
 
                 finish = std::chrono::high_resolution_clock::now();
 
@@ -214,6 +216,9 @@ namespace viennamesh
                 info(1) << curvature_output(curvatures) << std::endl;
 
                 info(1) << "!!!!!!!!!! Eck Kanten: " << edge_edges << std::endl;
+
+                info(1) << "!!!!!!!!!! ECKEN placement: " << ecke << std::endl;
+
 
                 /*std::ofstream myfile;
                 myfile.open ("costs.txt", std::ios_base::app);
@@ -266,11 +271,88 @@ namespace viennamesh
 
             info(1) << "saving the mesh..." << std::endl;
 
+
             set_output("mesh", my_mesh);
+
+            //___________________________________Testing_writing data into VTU file________________________________________________
+            
+            //create Vector to store quantities
+            std::vector<viennagrid_quantity_field> quantity_fields;
+
+            //create one quantity
+            viennagrid_quantity_field quantity_field=0;
+            viennagrid_quantity_field_create(&quantity_field);
+
+            //set the type of the quantity
+            viennagrid_quantity_field_init(quantity_field,
+                            VIENNAGRID_ELEMENT_TYPE_VERTEX ,                                        // topological dimension of the elements
+                            VIENNAGRID_QUANTITY_FIELD_TYPE_NUMERIC,   // floats
+                            1,                                        // one float per element
+                            VIENNAGRID_QUANTITY_FIELD_STORAGE_SPARSE);
+
+                        //create one quantity
+            viennagrid_quantity_field quantity_field1=0;
+            viennagrid_quantity_field_create(&quantity_field1);
+
+            //set the type of the quantity
+            viennagrid_quantity_field_init(quantity_field1,
+                            VIENNAGRID_ELEMENT_TYPE_VERTEX ,                                        // topological dimension of the elements
+                            VIENNAGRID_QUANTITY_FIELD_TYPE_NUMERIC,   // floats
+                            1,                                        // one float per element
+                            VIENNAGRID_QUANTITY_FIELD_STORAGE_SPARSE);
+
+            
+            long id=0;
+
+            for(cgal::polyhedron_surface_mesh::Point_iterator at=my_mesh.points_begin(),end=my_mesh.points_end();at!=end;++at)
+            {
+                //add data into the quantitiy
+
+                if(curvatures.find(*at) == curvatures.end()){
+
+                    info(1) << (*at) << std::endl;
+
+                }else{
+                
+                    viennagrid_quantity_field_value_set(quantity_field,id,&((curvatures.find(*at)->second).curvature_1));
+
+                    viennagrid_quantity_field_value_set(quantity_field1,id,&((curvatures.find(*at)->second).curvature_2));
+                }
+
+                
+                id++;
+            }
+
+
+            // add current quantity to the vector
+            viennagrid_quantity_field_name_set(quantity_field,"PC1");
+            quantity_fields.push_back(quantity_field);
+
+            viennagrid_quantity_field_name_set(quantity_field1,"PC2");
+            quantity_fields.push_back(quantity_field1);
+
+
+
+            //export quantities
+            data_handle<viennagrid_quantity_field> quantity_field_handle=viennamesh::plugin_algorithm::make_data(to_cpp(quantity_fields[0]));  
+            quantity_field_handle.push_back(to_cpp(quantity_fields[1]));           
+            set_output("quantities",quantity_field_handle);
+
+            
+
+            //___________________________________Testing_writing data into VTU file________________________________________________
+
+
 
             return true;
  
         }
+
+
+        /*data_handle<viennagrid_quantity_field> create_quanteties_test(){
+
+            return NULL;
+        }*/
 
        
     }

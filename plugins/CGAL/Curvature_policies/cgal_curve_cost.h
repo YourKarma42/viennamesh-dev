@@ -38,6 +38,13 @@ public:
 
   typedef typename ECM::Point_3 Point_3;
 
+
+//TODO: nicht gut überlegen ob mans anders machen kann
+  typedef CGAL::Simple_cartesian<double> Kernel;
+  typedef Kernel::Vector_3 Vector_3;
+
+
+
   std::unordered_map<Point_3, viennamesh::cgal::vertex_statistics, viennamesh::cgal::Point_3_Hash, viennamesh::cgal::Point_3_Equal>   & curvatures;
 
   std::vector<double> & times;
@@ -93,6 +100,8 @@ public:
     auto current_point = curvatures.find(aProfile.p0());
     if(current_point != curvatures.end()){
         //curvature was already calculated
+
+        
 
         curves_p0[0] = (current_point->second).curvature_1;
 
@@ -160,6 +169,16 @@ public:
 
     //think about something with stop prediction right angles are canceled! 
 
+
+    /*if(fabs(curves_p0[0]) > flat_boundary && fabs(curves_p0[1]) > flat_boundary){
+      edge_edges++;
+    }
+
+    if(fabs(curves_p1[0]) > flat_boundary && fabs(curves_p1[1])> flat_boundary){
+      edge_edges++;
+    }*/
+
+
     double c1=0.0;
 
     double c2=0.0;
@@ -172,6 +191,7 @@ public:
 
       if(c1 >flat_boundary && c2 > flat_boundary){
         mod = 19.0;
+        
       }
       else{
         mod = 32.0;
@@ -181,6 +201,50 @@ public:
        
     }
 
+
+    if (fabs(curves_p0[0]) < flat_boundary && fabs(curves_p0[1]) < flat_boundary){
+
+      if (fabs(curves_p1[0]) < flat_boundary && fabs(curves_p1[1]) < flat_boundary){
+        // "flat" edge so midpoint
+      }else{
+        // v1 is not flat
+      }
+    }else{
+
+      if (fabs(curves_p1[0]) < flat_boundary && fabs(curves_p1[1]) < flat_boundary){
+        // v0 is not flat
+      }else{
+        
+
+        Vector_3 normal_left_face = CGAL::normal((aProfile.v0_v1())->vertex()->point(), 
+                                                (aProfile.v0_v1())->next()->vertex()->point(), 
+                                                (aProfile.v0_v1())->next()->next()->vertex()->point());
+
+        Vector_3 normal_right_face = CGAL::normal((aProfile.v1_v0())->vertex()->point(), 
+                                                 (aProfile.v1_v0())->next()->vertex()->point(), 
+                                                 (aProfile.v1_v0())->next()->next()->vertex()->point()); 
+
+        /*          std::ofstream myfile;
+          myfile.open ("costs.txt", std::ios_base::app);
+          if (myfile.is_open()){
+
+            myfile <<  
+
+            "blub" << std::endl;
+
+            myfile.close();
+          }*/
+
+        if(normal_left_face - normal_right_face == Vector_3(0.0,0.0,0.0)){
+
+          if(true){
+
+            return  result_type(-10.0);
+          }
+        }
+
+      }
+    }
 
 
     //the smaller the cost the earlier its coursed

@@ -33,6 +33,7 @@ namespace viennamesh
         typedef CGAL::Simple_cartesian<double> Kernel;
         typedef CGAL::Polyhedron_3<Kernel> polyhedron_surface_mesh;
         typedef Kernel::Point_3 Point_3;
+
     }
 
     viennamesh_error convert(viennagrid::mesh const & input, cgal::polyhedron_surface_mesh & output);

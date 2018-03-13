@@ -38,6 +38,8 @@ public:
                  , size_type         aCurrentCount
                  ) const 
   {
+    
+    //return (static_cast<double>(aInitialCount) - static_cast<double>(aCurrentCount)) > mRatio ;
     return ( static_cast<double>(aCurrentCount) / static_cast<double>(aInitialCount) ) < mRatio ;
   }
   

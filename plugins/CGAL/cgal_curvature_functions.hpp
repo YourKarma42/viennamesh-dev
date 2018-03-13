@@ -16,6 +16,9 @@
 
 //#include "viennameshpp/plugin.hpp"
 
+#ifndef CURVE_FUNC_T
+#define CURVE_FUNC_T
+
 
 #define CGAL_EIGEN3_ENABLED
 #include <CGAL/Monge_via_jet_fitting.h>
@@ -332,5 +335,7 @@ namespace viennamesh
   }
 
 }
+
+#endif /* CURVE_FUNC_T */
 
 
