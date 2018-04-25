@@ -41,6 +41,8 @@ public:
 
 public:
 
+
+
   Curvature_placement(std::unordered_map<Point_3, viennamesh::cgal::vertex_statistics, viennamesh::cgal::Point_3_Hash, viennamesh::cgal::Point_3_Equal> & c, 
     int & e)
   : curvatures(c), ecke(e) {}
@@ -114,6 +116,22 @@ public:
 
       //ecke++;
 
+            //__DEBUG___
+
+        
+          /*std::ofstream myfile;
+          myfile.open ("costs.txt", std::ios_base::app);
+          if (myfile.is_open()){
+
+            myfile <<  
+
+            "Punkt p0: " <<  aProfile.p0() << std::endl <<
+
+            "Punkt p1: " <<  aProfile.p1() << std::endl << std::endl;
+  
+            myfile.close();
+          }*/
+
     if (fabs((v0->second).curvature_1) < flat_boundary && fabs((v0->second).curvature_2) < flat_boundary){
 
       if (fabs((v1->second).curvature_1) < flat_boundary && fabs((v1->second).curvature_2) < flat_boundary){
@@ -150,6 +168,10 @@ public:
 
         //Face test = face(aProfile.v0_v1(), aProfile.surface_mesh());
 
+        double epsilon_normal = 0.9;
+
+        //(aProfile.v0_v1())->normal()
+
 
         Vector_3 normal_left_face = CGAL::normal((aProfile.v0_v1())->vertex()->point(), 
                                                 (aProfile.v0_v1())->next()->vertex()->point(), 
@@ -159,7 +181,18 @@ public:
                                                  (aProfile.v1_v0())->next()->vertex()->point(), 
                                                  (aProfile.v1_v0())->next()->next()->vertex()->point()); 
 
-        if(normal_left_face - normal_right_face == Vector_3(0.0,0.0,0.0)){
+                    Vector_3 a = normal_right_face;
+
+            Vector_3 b = normal_left_face;
+
+        //double ang = CGAL::angle(normal_right_face, normal_left_face);                                        
+
+
+        // Abfrage genau überlegen
+
+        if(((a.x()*b.x()+a.y()*b.y()+a.z()*b.z()) /
+           (std::sqrt(a.x()*a.x()+a.y()*a.y()+a.z()*a.z())*std::sqrt(b.x()*b.x()+b.y()*b.y()+b.z()*b.z())))
+           > epsilon_normal){
 
           auto e0 = curvatures.find(aProfile.v0_v1()->next()->vertex()->point());
           auto e1 = curvatures.find(aProfile.v1_v0()->next()->vertex()->point());
@@ -194,7 +227,9 @@ public:
               }
           //______________________________________________________________________________________
 
-          std::ofstream myfile;
+
+         
+          /*std::ofstream myfile;
           myfile.open ("costs.txt", std::ios_base::app);
           if (myfile.is_open()){
 
@@ -214,8 +249,11 @@ public:
 
             "Krümmungen p1: " << fabs((e1->second).curvature_1) << "  " << fabs((e1->second).curvature_2) << std::endl;
 
+
+
             myfile.close();
-          }
+          }*/
+
 
           if(fabs((e0->second).curvature_1) < flat_boundary && fabs((e0->second).curvature_2) < flat_boundary){
             return optional<typename Profile::Point>(aProfile.v1_v0()->next()->vertex()->point()) ;
@@ -227,6 +265,45 @@ public:
           
         }
         //__DEBUG___
+
+        
+          std::ofstream myfile;
+          myfile.open ("costs.txt", std::ios_base::app);
+          if (myfile.is_open()){
+
+            Vector_3 a = normal_right_face;
+
+            Vector_3 b = normal_left_face;
+
+
+            myfile <<  
+
+            "Punkt p0: " <<  aProfile.p0() << std::endl <<
+
+            "Punkt p1: " <<  aProfile.p1() << std::endl <<
+
+            "ECKE v0_v1:" << aProfile.v0_v1()->next()->vertex()->point() << " " 
+                          << aProfile.v0_v1()->next()->next()->vertex()->point() << " "
+                          << aProfile.v0_v1()->next()->next()->next()->vertex()->point()  << std::endl <<
+
+            "ECKE v1_v0:" << aProfile.v0_v1()->opposite()->next()->vertex()->point() << " " 
+                          << aProfile.v0_v1()->opposite()->next()->next()->vertex()->point() << " "
+                          << aProfile.v0_v1()->opposite()->next()->next()->next()->vertex()->point()<< std::endl <<
+
+
+            "neuer punkt: " << midpoint(aProfile.p0(),aProfile.p1()) << std::endl <<
+
+            "normalvektore right: " << normal_right_face << std::endl <<
+            
+            "normalvektore left: " <<  normal_left_face << std::endl;
+
+            
+            
+            
+            myfile.close();
+          }
+
+          
 
         
         
@@ -243,6 +320,13 @@ public:
     //return optional<typename Profile::Point>(midpoint(aProfile.p0(),aProfile.p1())) ;
   }
   
+      // delete just tmp
+  double tmp_skp(Vector_3 a, Vector_3 b){
+
+    return (a.x()*b.x()+a.y()*b.y()+a.z()*b.z())/
+    (sqrt(a.x()+a.y()+a.z())*sqrt(b.x()+b.y()+b.z()));
+  }
+
 /*private:
 
   LindstromTurk_params mParams ;    */

@@ -38,6 +38,7 @@ namespace viennamesh
 
     };
 
+    std::list<Triangle> calc_triangle_angles_sides(Vertex& v);
 
     double mixed_area(std::list<Triangle> &triangles);
 
@@ -75,8 +76,31 @@ namespace viennamesh
    at               prev
 */
 
+    void calc_principle_curveatures(Vertex& v, double curvatures[]){
 
-    std::string calc_curvature(Vertex& v){
+        std::list<Triangle> one_ring_neightbors;
+        one_ring_neightbors = calc_triangle_angles_sides(v);
+
+
+        double area = mixed_area(one_ring_neightbors);
+
+        double mean = mean_curvature(one_ring_neightbors, v, area);
+
+        double gauss = gauss_curvature(one_ring_neightbors, area);
+
+        double k_1 = k1(gauss, mean);
+
+        double k_2 = k2(gauss, mean);
+
+        curvatures[0] = k_1;
+
+        curvatures[1] = k_2;
+
+
+    }
+
+
+    std::string my_curvature_test_print(Vertex& v){
 
         std::stringstream  out;
 
@@ -85,7 +109,82 @@ namespace viennamesh
         //eventuell Vektor
         std::list<Triangle> one_ring_neightbors;
 
+
+        one_ring_neightbors = calc_triangle_angles_sides(v);
+
+
+        //out << v.point() << std::endl;
+
+        out << one_ring_neightbors.size() << std::endl;
+
+        for(auto t : one_ring_neightbors){
+            out << t.alpha << std::endl;
+            out << t.beta << std::endl;
+            out << t.theta << std::endl;
+            out << t.len_prev_v<< std::endl;
+            out << t.len_at_prev<< std::endl;
+            out << t.len_at_v<< std::endl;
+
+            out <<  std::endl;
+
+        }
+
+        double area = mixed_area(one_ring_neightbors);
+
+        double mean = mean_curvature(one_ring_neightbors, v, area);
+
+        double gauss = gauss_curvature(one_ring_neightbors, area);
+
+        double k_1 = k1(gauss, mean);
+
+        double k_2 = k2(gauss, mean);
+
+        out << "area: " << area << std::endl;
+
+        out << "gaus: " << gauss << std::endl;
+
+        out << "mean: " << mean << std::endl;
+
+        out << "k1:  " << k_1 << std::endl;
+
+        out << "k2:  " << k_2 << std::endl;
+
+
+
+        /*double area1;
+        for(auto t: one_ring_neightbors){
+
+            if(t.theta >= M_PI_2){ //angle at v obtuse
+
+                out << "normal: " <<  triangle_area(t)/2 << std::endl;
+
+            }else if(t.alpha >= M_PI_2 || t.beta >= M_PI_2){ //angle at alpha or beta obtuse
+
+                out << "normal: " <<  triangle_area(t)/4 << std::endl;
+
+            }else{ // nonobtuse trinangle
+
+                //Voronoi formula
+                area += 0.125 * (atan(t.alpha)*t.len_prev_v*t.len_prev_v + atan(t.beta)*t.len_at_v*t.len_at_v);
+
+
+            }    
+            
+            out << "Voroni: " << 0.125 * (atan(t.alpha)*t.len_prev_v*t.len_prev_v + atan(t.beta)*t.len_at_v*t.len_at_v)<< std::endl;
+
+        }*/
+
+        
+
+
+        return out.str();
+    }
+
+    std::list<Triangle> calc_triangle_angles_sides(Vertex& v){
+
         Vector_3 vec1, vec2, vec3;
+
+        std::list<Triangle> one_ring_neightbors;
 
         
         mesh_t::Vertex::Halfedge_around_vertex_circulator at=v.vertex_begin(), end = at;
@@ -103,7 +202,7 @@ namespace viennamesh
 
             double norm2 = std::sqrt(vec2.squared_length());
 
-            double tmp_beta = (vec1*(1/norm1))*(vec2*(1/norm2));
+            double tmp_beta = acos((vec1*(1/norm1))*(vec2*(1/norm2)));
           
             vec2 = vec2*(-1);
 
@@ -111,13 +210,13 @@ namespace viennamesh
 
             double norm3 = std::sqrt(vec3.squared_length());
 
-            double tmp_alpha = (vec2*(1/norm2))*(vec3*(1/norm3));
+            double tmp_alpha = acos((vec2*(1/norm2))*(vec3*(1/norm3)));
 
             vec3 = vec3*(-1);
 
             vec1 = vec1*(-1);
 
-            double tmp_theta = (vec1*(1/norm1))*(vec3*(1/norm3));
+            double tmp_theta = acos((vec1*(1/norm1))*(vec3*(1/norm3)));
 
             Triangle newTriangle;
             newTriangle.alpha = tmp_alpha;
@@ -144,7 +243,7 @@ namespace viennamesh
 
         double norm2 = std::sqrt(vec2.squared_length());
 
-        double tmp_beta = (vec1*(1/norm1))*(vec2*(1/norm2));
+        double tmp_beta = acos((vec1*(1/norm1))*(vec2*(1/norm2)));
 
 
         vec2 = vec2*(-1);
@@ -153,7 +252,7 @@ namespace viennamesh
 
         double norm3 = std::sqrt(vec3.squared_length());
 
-        double tmp_alpha = (vec2*(1/norm2))*(vec3*(1/norm3));
+        double tmp_alpha = acos((vec2*(1/norm2))*(vec3*(1/norm3)));
 
         
         vec3 = vec3*(-1);
@@ -175,99 +274,29 @@ namespace viennamesh
 
         one_ring_neightbors.push_back(newTriangle);
 
-       
-
-        //out << v.point() << std::endl;
-
-        out << one_ring_neightbors.size() << std::endl;
-
-        for(auto t : one_ring_neightbors){
-            out << t.alpha << std::endl;
-            out << t.beta << std::endl;
-            out << t.theta << std::endl;
-            out << t.len_prev_v<< std::endl;
-            out << t.len_at_prev<< std::endl;
-            out << t.len_at_v<< std::endl;
-
-            out <<  std::endl;
-
-        }
-
-        double area = mixed_area(one_ring_neightbors);
-
-        double mean = mean_curvature(one_ring_neightbors, v, area);
-
-        double gauss = gauss_curvature(one_ring_neightbors, area);
-
-        out << "area: " << area << std::endl;
-
-        out << "gaus: " << gauss << std::endl;
-
-        out << "mean: " << mean << std::endl;
+        return one_ring_neightbors;
 
 
-//******************************Testing*************************
-
-
-        //paper formular (10)
-        double k_1 = mean + std::sqrt(mean*mean - gauss);
-        //paper formular (11)
-        double k_2 = mean - std::sqrt(mean*mean - gauss);
-
-        out << std::sqrt(mean*mean - gauss) << std::endl;
-
-        out << "k1:  " << k_1 << std::endl;
-
-        out << "k2:  " << k_2 << std::endl;
-
-
-
-
-       /* Vector_3 mean_curve_normal_op;
-
-        mesh_t::Vertex::Halfedge_around_vertex_circulator at_a=v.vertex_begin(), end_a = at_a;
-
-        std::list<Triangle>::const_iterator tri_it = one_ring_neightbors.begin();
-
-        Triangle pre = one_ring_neightbors.back();
-
-        do {
-
-            out <<
-            tan(M_PI/2 -(*tri_it).alpha) << std::endl <<
-            tan(M_PI/2 -pre.beta) << std::endl
-            << std::endl;
-
-            //paper formular (8)
-            mean_curve_normal_op = mean_curve_normal_op +  (1/(2*area)) *
-            (tan(M_PI/2 -(*tri_it).alpha) + tan(M_PI/2 -pre.beta)) * Vector_3(at_a->opposite()->vertex()->point(), v.point());
-
-            pre = *tri_it;
-
-            at_a ++;
-            tri_it++;
-
-        }while(at_a != end_a);
-
-        out << mean_curve_normal_op << std::endl;
-
-        out << std::sqrt(mean_curve_normal_op.squared_length())/2 << std::endl;*/
-
-//***************************************************************
-
-
-        return out.str();
     }
 
     double k1(double gauss_curve, double mean_curve){
-        return 0;
+
+        //paper formular (10)
+        if( (mean_curve*mean_curve - gauss_curve)>0 )
+            return mean_curve + std::sqrt(mean_curve*mean_curve - gauss_curve);
+
+        return mean_curve;
 
     }
 
     double k2(double gauss_curve, double mean_curve){
-        return 0;
-    }
 
+       //paper formular (11)
+        if( (mean_curve*mean_curve - gauss_curve)>0 )
+            return mean_curve - std::sqrt(mean_curve*mean_curve - gauss_curve);
+
+        return mean_curve;
+    }
 
     double mean_curvature(std::list<Triangle> &triangles, Vertex& v, double area ){
 
@@ -283,7 +312,7 @@ namespace viennamesh
 
             //paper formular (8)
             mean_curve_normal_op = mean_curve_normal_op +  (1/(2*area)) *
-            (tan(M_PI/2 -(*tri_it).alpha) + tan(M_PI/2 -pre.beta)) * Vector_3(at_a->opposite()->vertex()->point(), v.point());
+            (atan((*tri_it).alpha) + atan(pre.beta)) * Vector_3(at_a->opposite()->vertex()->point(), v.point());
 
             pre = *tri_it;
 
@@ -317,18 +346,18 @@ namespace viennamesh
 
         for(auto t: triangles){
 
-            if(t.theta <= 0){ //angle at v obtuse
+            if(t.theta >= M_PI_2){ //angle at v obtuse
 
                 area += triangle_area(t)/2;
 
-            }else if(t.alpha <= 0 || t.beta <= 0){ //angle at alpha or beta obtuse
+            }else if(t.alpha >= M_PI_2 || t.beta >= M_PI_2){ //angle at alpha or beta obtuse
 
                 area += triangle_area(t)/4;
 
             }else{ // nonobtuse trinangle
 
                 //Voronoi formula
-                area += 0.125 * (tan(M_PI/2 - t.alpha)*t.len_prev_v*t.len_prev_v + tan(M_PI/2 - t.beta)*t.len_at_v*t.len_at_v);
+                area += 0.125 * (atan(t.alpha)*t.len_prev_v*t.len_prev_v + atan(t.beta)*t.len_at_v*t.len_at_v);
 
 
             }           

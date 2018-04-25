@@ -31,6 +31,9 @@
 
 #include <CGAL/Curvature_policies/cgal_hash_points.hpp>
 
+//curvature testfunction
+#include <CGAL/curve_calc_dev/curve_test_1.hpp>
+
 //TODO: Rerwrite with template types!
 
 
@@ -150,9 +153,34 @@ namespace viennamesh
     }
 
 
+
+    //my
+
+    //needs array with 2 fields of floating type
+    double principal_curvatures_my(mesh_t::Vertex& vertex, double  curvatures[]){
+
+        auto start = std::chrono::high_resolution_clock::now();
+
+        
+        calc_principle_curveatures(vertex, curvatures);
+
+        //curvatures[0] = 0;  // max
+        //curvatures[1] = 0; // min
+
+        auto finish = std::chrono::high_resolution_clock::now();
+
+
+
+        return std::chrono::duration_cast<std::chrono::microseconds>(finish-start).count();
+
+       // return 0;
+
+    }
+
+
     //generic types verwenden
     //needs array with 2 fields of floating type
-    double principal_curvatures(mesh_t::Vertex& vertex, mesh_t& mesh, double  curvatures[]){
+    double principal_curvatures_cgal(mesh_t::Vertex& vertex, mesh_t& mesh, double  curvatures[]){
 
         auto start = std::chrono::high_resolution_clock::now();
 
@@ -169,6 +197,15 @@ namespace viennamesh
         return std::chrono::duration_cast<std::chrono::microseconds>(finish-start).count();
 
        // return 0;
+
+    }
+
+
+    double principal_curvatures(mesh_t::Vertex& vertex, mesh_t& mesh, double  curvatures[]){
+
+         //return principal_curvatures_cgal(vertex, mesh, curvatures);
+
+         return principal_curvatures_my(vertex,  curvatures);
 
     }
 

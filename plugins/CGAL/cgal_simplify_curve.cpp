@@ -56,8 +56,10 @@
 #include <unordered_map>
 
 //my hash function for unordered map
-
 #include <CGAL/Curvature_policies/cgal_hash_points.hpp>
+
+//curvature testfunction
+#include <CGAL/curve_calc_dev/curve_test_1.hpp>
 
 
 
@@ -204,7 +206,7 @@ namespace viennamesh
 
                 start = std::chrono::high_resolution_clock::now();
 
-                removed_edges = smart_edge_collapse(my_mesh, stop_test, cost_test, placement_test);
+                removed_edges = smart_edge_collapse(my_mesh, stop_test, cost_test, placement);
 
                 finish = std::chrono::high_resolution_clock::now();
 
@@ -269,79 +271,190 @@ namespace viennamesh
 
             info(1) << "removed edges:" << removed_edges << std::endl;
 
-            info(1) << "saving the mesh..." << std::endl;
-
-
-            set_output("mesh", my_mesh);
 
             //___________________________________Testing_writing data into VTU file________________________________________________
             
-            //create Vector to store quantities
-            std::vector<viennagrid_quantity_field> quantity_fields;
-
-            //create one quantity
-            viennagrid_quantity_field quantity_field=0;
-            viennagrid_quantity_field_create(&quantity_field);
-
-            //set the type of the quantity
-            viennagrid_quantity_field_init(quantity_field,
-                            VIENNAGRID_ELEMENT_TYPE_VERTEX ,                                        // topological dimension of the elements
-                            VIENNAGRID_QUANTITY_FIELD_TYPE_NUMERIC,   // floats
-                            1,                                        // one float per element
-                            VIENNAGRID_QUANTITY_FIELD_STORAGE_SPARSE);
-
-                        //create one quantity
-            viennagrid_quantity_field quantity_field1=0;
-            viennagrid_quantity_field_create(&quantity_field1);
-
-            //set the type of the quantity
-            viennagrid_quantity_field_init(quantity_field1,
-                            VIENNAGRID_ELEMENT_TYPE_VERTEX ,                                        // topological dimension of the elements
-                            VIENNAGRID_QUANTITY_FIELD_TYPE_NUMERIC,   // floats
-                            1,                                        // one float per element
-                            VIENNAGRID_QUANTITY_FIELD_STORAGE_SPARSE);
-
+            if(policy() == "m"){
             
-            long id=0;
+                //create Vector to store quantities
+                std::vector<viennagrid_quantity_field> quantity_fields;
 
-            for(cgal::polyhedron_surface_mesh::Point_iterator at=my_mesh.points_begin(),end=my_mesh.points_end();at!=end;++at)
-            {
-                //add data into the quantitiy
+                //create one quantity
+                viennagrid_quantity_field quantity_field=0;
+                viennagrid_quantity_field_create(&quantity_field);
 
-                if(curvatures.find(*at) == curvatures.end()){
+                //set the type of the quantity
+                viennagrid_quantity_field_init(quantity_field,
+                                VIENNAGRID_ELEMENT_TYPE_VERTEX ,                                        // topological dimension of the elements
+                                VIENNAGRID_QUANTITY_FIELD_TYPE_NUMERIC,   // floats
+                                1,                                        // one float per element
+                                VIENNAGRID_QUANTITY_FIELD_STORAGE_SPARSE);
 
-                    info(1) << (*at) << std::endl;
+                            //create one quantity
+                viennagrid_quantity_field quantity_field1=0;
+                viennagrid_quantity_field_create(&quantity_field1);
 
-                }else{
-                
-                    viennagrid_quantity_field_value_set(quantity_field,id,&((curvatures.find(*at)->second).curvature_1));
+                //set the type of the quantity
+                viennagrid_quantity_field_init(quantity_field1,
+                                VIENNAGRID_ELEMENT_TYPE_VERTEX ,                                        // topological dimension of the elements
+                                VIENNAGRID_QUANTITY_FIELD_TYPE_NUMERIC,   // floats
+                                1,                                        // one float per element
+                                VIENNAGRID_QUANTITY_FIELD_STORAGE_SPARSE);
 
-                    viennagrid_quantity_field_value_set(quantity_field1,id,&((curvatures.find(*at)->second).curvature_2));
+
+
+                //create one quantity
+                viennagrid_quantity_field quantity_field2=0;
+                viennagrid_quantity_field_create(&quantity_field2);
+
+                //set the type of the quantity
+                viennagrid_quantity_field_init(quantity_field2,
+                                VIENNAGRID_ELEMENT_TYPE_VERTEX ,                                        // topological dimension of the elements
+                                VIENNAGRID_QUANTITY_FIELD_TYPE_NUMERIC,   // floats
+                                1,                                        // one float per element
+                                VIENNAGRID_QUANTITY_FIELD_STORAGE_SPARSE);
+
+
+                                                
+                info(1)  << "----------------++++++++++++++++++ cgal_curve ++++++++++++++++++----------------" << std::endl;
+
+                long id=0;
+
+                start = std::chrono::high_resolution_clock::now();
+
+                for(cgal::polyhedron_surface_mesh::Vertex_iterator at=my_mesh.vertices_begin(),end=my_mesh.vertices_end();at!=end;++at)
+                {
+                    //add data into the quantitiy
+
+                        double blub[2];
+
+                        double a = principal_curvatures_cgal(*at,my_mesh, blub);
+
+                        a=fabs((blub[0]+blub[1])/2.0);
+                    
+                        viennagrid_quantity_field_value_set(quantity_field,id,&a);
+  
+                    id++;
                 }
 
+                finish = std::chrono::high_resolution_clock::now();
+
+                info(1)  << std::chrono::duration_cast<std::chrono::seconds>(finish-start).count() << " s" << std::endl;
+
+                // add current quantity to the vector
+                viennagrid_quantity_field_name_set(quantity_field,"cgal_curve");
+                quantity_fields.push_back(quantity_field);
+
+                info(1)  << "----------------++++++++++++++++++ my_curve ++++++++++++++++++----------------" << std::endl;
+
+                id=0;
+
+                start = std::chrono::high_resolution_clock::now();
+
+                for(cgal::polyhedron_surface_mesh::Vertex_iterator at=my_mesh.vertices_begin(),end=my_mesh.vertices_end();at!=end;++at)
+                {
+
+                        double blub[2];
+
+                        double a = principal_curvatures_my(*at, blub);
+
+                        a=(blub[0]+blub[1])/2.0;
+                    
+                        viennagrid_quantity_field_value_set(quantity_field1,id,&a);
+  
+                    id++;
+                }
+
+                finish = std::chrono::high_resolution_clock::now();
+
+                info(1) << std::chrono::duration_cast<std::chrono::seconds>(finish-start).count() << " s" << std::endl;
+
                 
-                id++;
+
+                // add current quantity to the vector
+
+                viennagrid_quantity_field_name_set(quantity_field1,"my_curve");
+                quantity_fields.push_back(quantity_field1);
+
+
+                //export quantities
+                data_handle<viennagrid_quantity_field> quantity_field_handle=viennamesh::plugin_algorithm::make_data(to_cpp(quantity_fields[0]));  
+                quantity_field_handle.push_back(to_cpp(quantity_fields[1]));          
+                set_output("quantities",quantity_field_handle);
+
+            
+
+#pragma region write principle curvatures and mean curvature in VTU
+                
+               /*long id=0;
+
+                for(cgal::polyhedron_surface_mesh::Point_iterator at=my_mesh.points_begin(),end=my_mesh.points_end();at!=end;++at)
+                {
+
+
+
+                    //add data into the quantitiy
+
+                    if(curvatures.find(*at) == curvatures.end()){
+
+                        info(1) << (*at) << std::endl;
+
+                    }else{
+                    
+                        viennagrid_quantity_field_value_set(quantity_field,id,&((curvatures.find(*at)->second).curvature_1));
+
+                        viennagrid_quantity_field_value_set(quantity_field1,id,&((curvatures.find(*at)->second).curvature_2));
+
+                        double blub = fabs((curvatures.find(*at)->second).curvature_1)+fabs((curvatures.find(*at)->second).curvature_2);
+
+                        viennagrid_quantity_field_value_set(quantity_field2,id,
+                            &(blub));
+                    }
+                    
+                    id++;
+                }
+
+
+
+                // add current quantity to the vector
+                viennagrid_quantity_field_name_set(quantity_field,"PC1");
+                quantity_fields.push_back(quantity_field);
+
+                viennagrid_quantity_field_name_set(quantity_field1,"PC2");
+                quantity_fields.push_back(quantity_field1);
+
+                viennagrid_quantity_field_name_set(quantity_field2,"curve");
+                quantity_fields.push_back(quantity_field2);
+
+
+
+                //export quantities
+                data_handle<viennagrid_quantity_field> quantity_field_handle=viennamesh::plugin_algorithm::make_data(to_cpp(quantity_fields[0]));  
+                quantity_field_handle.push_back(to_cpp(quantity_fields[1]));    
+                quantity_field_handle.push_back(to_cpp(quantity_fields[2]));        
+                set_output("quantities",quantity_field_handle);*/
+
+#pragma endregion
+
             }
 
 
-            // add current quantity to the vector
-            viennagrid_quantity_field_name_set(quantity_field,"PC1");
-            quantity_fields.push_back(quantity_field);
-
-            viennagrid_quantity_field_name_set(quantity_field1,"PC2");
-            quantity_fields.push_back(quantity_field1);
-
-
-
-            //export quantities
-            data_handle<viennagrid_quantity_field> quantity_field_handle=viennamesh::plugin_algorithm::make_data(to_cpp(quantity_fields[0]));  
-            quantity_field_handle.push_back(to_cpp(quantity_fields[1]));           
-            set_output("quantities",quantity_field_handle);
-
-            
+        
 
             //___________________________________Testing_writing data into VTU file________________________________________________
 
+
+            //first new curvature tests
+
+            cgal::polyhedron_surface_mesh::Vertex_iterator at=my_mesh.vertices_begin();
+
+            info(1) << my_curvature_test_print(*at) <<std::endl;
+
+
+            info(1) << "exporting the mesh..." << std::endl;
+
+
+            set_output("mesh", my_mesh);
 
 
             return true;
