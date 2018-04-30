@@ -446,9 +446,22 @@ namespace viennamesh
 
             //first new curvature tests
 
-            cgal::polyhedron_surface_mesh::Vertex_iterator at=my_mesh.vertices_begin();
 
-            info(1) << my_curvature_test_print(*at) <<std::endl;
+            for(cgal::polyhedron_surface_mesh::Vertex_iterator at=my_mesh.vertices_begin(),end=my_mesh.vertices_end();at!=end;++at)
+            {
+
+ 
+                if(fabs((*at).point().x() - 1.03963) <= 0.00001 &&
+                   fabs((*at).point().z() - 1.77931) <= 0.00001) {     
+                    //info(1) << (*at).point() <<std::endl;    
+                    info(1) << my_curvature_test_print(*at) <<std::endl;
+                }
+
+    
+            }        
+
+
+
 
 
             info(1) << "exporting the mesh..." << std::endl;

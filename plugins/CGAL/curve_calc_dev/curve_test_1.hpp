@@ -32,9 +32,9 @@ namespace viennamesh
         double len_at_prev;
         double len_prev_v;
 
-        /*Vector_3 at_v;
+        Vector_3 at_v;
         Vector_3 at_prev;
-        Vector_3 prev_v;*/
+        Vector_3 prev_v;
 
     };
 
@@ -117,15 +117,27 @@ namespace viennamesh
 
         out << one_ring_neightbors.size() << std::endl;
 
+        double sum_theta=0;
+
         for(auto t : one_ring_neightbors){
-            out << t.alpha << std::endl;
-            out << t.beta << std::endl;
+           // out << t.alpha << std::endl;
+           // out << t.beta << std::endl;
             out << t.theta << std::endl;
             out << t.len_prev_v<< std::endl;
             out << t.len_at_prev<< std::endl;
             out << t.len_at_v<< std::endl;
 
-            out <<  std::endl;
+            out << t.at_v << std::endl;
+            out << t.at_prev << std::endl;
+            out << t.prev_v << std::endl;
+
+
+
+            out << (t.prev_v *(1/t.len_prev_v))*(t.at_v*(1/t.len_at_v)) << std::endl;          
+
+            sum_theta += t.theta;
+
+            out <<  std::endl;  
 
         }
 
@@ -148,6 +160,8 @@ namespace viennamesh
         out << "k1:  " << k_1 << std::endl;
 
         out << "k2:  " << k_2 << std::endl;
+
+        out << "Sum Thetas: " << sum_theta << std::endl;
 
 
 
@@ -225,6 +239,10 @@ namespace viennamesh
             newTriangle.len_prev_v = norm1;
             newTriangle.len_at_prev = norm2;
             newTriangle.len_at_v = norm3;
+
+            newTriangle.at_v = vec3;
+            newTriangle.at_prev = vec2;
+            newTriangle.prev_v = vec1;
             
 
             one_ring_neightbors.push_back(newTriangle);
@@ -260,7 +278,7 @@ namespace viennamesh
         vec1 = vec1*(-1);
 
 
-        double tmp_theta = (vec1*(1/norm1))*(vec3*(1/norm3));
+        double tmp_theta = acos((vec1*(1/norm1))*(vec3*(1/norm3)));
 
         Triangle newTriangle;
         newTriangle.alpha = tmp_alpha;
@@ -269,6 +287,10 @@ namespace viennamesh
         newTriangle.len_prev_v = norm1;
         newTriangle.len_at_prev = norm2;
         newTriangle.len_at_v = norm3;
+
+        newTriangle.at_v = vec3;
+        newTriangle.at_prev = vec2;
+        newTriangle.prev_v = vec1;
         
         
 
