@@ -2,7 +2,6 @@
 #include <CGAL/Surface_mesh_simplification/Policies/Edge_collapse/Edge_profile.h>
 
 
-#include "../cgal_curvature_functions.hpp"
 
 namespace CGAL {
 
@@ -21,7 +20,7 @@ namespace Surface_mesh_simplification
 // Stops when the ratio of initial to current vertex pairs is below some value.
 //
 template<class ECM_>    
-class Curvature_stop_predicate
+class Curvature_flat_stop
 {
 public:
 
@@ -32,8 +31,8 @@ public:
   typedef typename boost::graph_traits<ECM>::edge_descriptor edge_descriptor ;
   typedef typename boost::graph_traits<ECM>::edges_size_type size_type ;
     
-  Curvature_stop_predicate( double aRatio ) : mRatio(aRatio) {}
-  
+  Curvature_flat_stop( double edge_length_threshold ) : m_edge_sq_length_threshold(edge_length_threshold*edge_length_threshold) {}
+  //already implemented in higher cgal versions this version is 4.8.1
   template <typename F> 
   bool operator()( F const&       // aCurrentCost
                  , Profile const&    aProfile
@@ -41,29 +40,20 @@ public:
                  , size_type         aCurrentCount
                  ) const 
   {
-    double flat_boundary = 0.00001;
+    // probably another hard break if edge length = penalty
+  /*   std::cout << CGAL::squared_distance(aProfile.p0(), aProfile.p1())  << std::endl;
+      std::cout <<  m_edge_sq_length_threshold << std::endl;
+    std::cout << (CGAL::squared_distance(aProfile.p0(), aProfile.p1()) > m_edge_sq_length_threshold) << std::endl;
+    */
 
-    double c1 = viennamesh::cgal::mean_curvature_my(*(aProfile.v0()));
-
-    double c2 = viennamesh::cgal::mean_curvature_my(*(aProfile.v1()));
-
-    if(c1 <= flat_boundary && c2 <= flat_boundary){
-      if((static_cast<double>(aCurrentCount) / static_cast<double>(aInitialCount))  < mRatio){
-        return true;
-      }else{
-        return false;
-      }
-        
-    }else{
-      return true;
-    }
+    //as long as edges arnt too long
+    return  CGAL::squared_distance(aProfile.p0(), aProfile.p1()) > m_edge_sq_length_threshold;
     
-    //return ( static_cast<double>(aCurrentCount) / static_cast<double>(aInitialCount) ) < mRatio ;
   }
   
 private:
   
-  double mRatio ;
+  double m_edge_sq_length_threshold ;
 };    
 
 } // namespace Surface_mesh_simplification

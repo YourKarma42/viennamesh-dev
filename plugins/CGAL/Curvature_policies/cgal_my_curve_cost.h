@@ -11,14 +11,12 @@
 
 #include<chrono>
 
-//hash table to store curvatures (delete)
+//hash table to store curvatures
 #include <unordered_map>
+
 #include <CGAL/Curvature_policies/cgal_hash_points.hpp>
 
 #include <CGAL/Surface_mesh_simplification/Policies/Edge_collapse/Edge_profile.h>
-
-//analytics
-#include "../analizing/cgal_mesh_analytics.hpp"
 
 
 
@@ -29,7 +27,7 @@ namespace Surface_mesh_simplification
 
 
   template<class ECM_>
-class Curvature_cost
+class my_Curvature_cost
 {
   
 public:
@@ -40,6 +38,8 @@ public:
 
   typedef typename ECM::Point_3 Point_3;
 
+  typedef typename ECM::Vertex Vertex;
+
 
 //TODO: nicht gut überlegen ob mans anders machen kann
   typedef CGAL::Simple_cartesian<double> Kernel;
@@ -47,20 +47,19 @@ public:
 
 
 
-  viennamesh::cgal::cgal_mesh_analytics<ECM>  & analytics;
+  std::unordered_map<Vertex, double>   & curvatures;
 
   std::vector<double> & times;
-  
-  int & edge_edges;
+
 
 public:
 
  int b;
 
-  Curvature_cost(viennamesh::cgal::cgal_mesh_analytics<ECM>  & a, 
+  my_Curvature_cost(std::unordered_map<Point_3, std::unordered_map<Vertex, double>> & c, 
   std::vector<double> &t,
   int & ee) 
-  : analytics(a), times(t), edge_edges(ee){}
+  : curvatures(c), times(t){}
 
   //Curvature_cost(int a) : b(a) {}
 
@@ -75,7 +74,7 @@ public:
     //costs File is deleted in cgal_simplify_curve.cpp
 
 
-    double flat_boundary = 0.001;
+    double flat_boundary = 0.00001;
 
     double curve_p0 = 0.0;
     double curve_p1 = 0.0;
@@ -157,48 +156,18 @@ public:
     //auto finish = std::chrono::high_resolution_clock::now();
 
     //times.push_back(std::chrono::duration_cast<std::chrono::microseconds>(finish-start).count());
-    
 
-   /* std::ofstream myfile;
-    myfile.open ("costs.txt", std::ios_base::app);
-    if (myfile.is_open()){
 
-      //myfile << c << "    " << ((a+b)/2) << "\n";
-
-     // if(a>1 && b >1)
-        myfile << abs(curves_p0[0]) << " " << abs(curves_p1[0]) << " " << abs(curves_p0[1]) << " " << abs(curves_p1[1]) << "\n";
-
-      myfile.close();
-    }*/
-
-   // double c1=fabs(curves_p0[0])+fabs(curves_p0[1]);
-
-    //double c2=fabs(curves_p1[0])+fabs(curves_p1[1]);
-
-    /*if(fabs(curve_p0) > flat_boundary || fabs(curve_p1) > flat_boundary){
-
-      c1 = fabs(curve_p0);
-
-      c2 = fabs(curve_p1);
-
-      if(c1 >flat_boundary && c2 > flat_boundary){
-        mod = 19.0;
-        
-      }
-      else{
-        mod = 32.0;
-      }  
-       
-
-       
-    }
-    return result_type(((c1+c2)/2)+mod);*/
 
     //the smaller the cost the earlier its coursed
 
     double c1 = viennamesh::cgal::mean_curvature_my(*(aProfile.v0()));
 
     double c2 = viennamesh::cgal::mean_curvature_my(*(aProfile.v1()));
+
+    if ((c1 <= flat_boundary) && (c2 <= flat_boundary)){
+
+    }
 
     return result_type(c1+c2);
 
