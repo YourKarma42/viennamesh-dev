@@ -60,3 +60,8 @@ target_link_libraries(test viennameshpp)
 add_executable(cgal_mesh_simplify_curve cgal_mesh_simplify_curve.cpp)
 target_link_libraries(cgal_mesh_simplify_curve viennameshpp)
 
+add_executable(vtk_cleaner vtk_cleaner.cpp)
+target_link_libraries(vtk_cleaner viennameshpp)
+
+add_executable(vtk_print_mesh_data vtk_print_mesh_data.cpp)
+target_link_libraries(vtk_print_mesh_data viennameshpp)

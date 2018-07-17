@@ -44,6 +44,8 @@ public:
   {
 
 
+    //std::cout << "Placement in placement: "<< midpoint(aProfile.p0(),aProfile.p1()) << std::endl;
+
     return optional<typename Profile::Point>(midpoint(aProfile.p0(),aProfile.p1())) ;
   }
   

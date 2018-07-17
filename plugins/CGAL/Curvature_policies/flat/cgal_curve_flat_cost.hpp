@@ -78,6 +78,7 @@ public:
         //std::cout<< "blubb" << std::endl;
     }else{
         c1=0;
+        std::cout<< "blubb" << std::endl;
     }
 
     if(analytics.has_curvature(aProfile.v1())){
@@ -85,6 +86,7 @@ public:
         //std::cout<< "blubb" << std::endl;
     }else{
         c2=0;
+        std::cout<< "blubb" << std::endl;
     }
 
     if(c1 < flat_boundary && c2 < flat_boundary){

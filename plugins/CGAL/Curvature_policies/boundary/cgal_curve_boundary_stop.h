@@ -43,6 +43,7 @@ public:
                     ) const 
     {
 
+            analytics.collection_over = true;
 
             if(aCurrentCost == 100 )
                 return true;

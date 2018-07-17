@@ -4,6 +4,8 @@
 #include "vtk_quadric_clustering.hpp"
 #include "vtk_quadric_decimation.hpp"
 #include "vtk_mesh_quality.hpp"
+#include "vtk_clean.hpp"
+#include "vtk_print_mesh_data.hpp"
 
 viennamesh_error viennamesh_plugin_init(viennamesh_context context)
 {
@@ -16,6 +18,10 @@ viennamesh_error viennamesh_plugin_init(viennamesh_context context)
     viennamesh::register_algorithm<viennamesh::vtk::quadric_clustering>(context);
     viennamesh::register_algorithm<viennamesh::vtk::quadric_decimation>(context);
     viennamesh::register_algorithm<viennamesh::vtk::mesh_quality>(context);
+    viennamesh::register_algorithm<viennamesh::vtk::clean>(context);
+
+    viennamesh::register_algorithm<viennamesh::vtk::print_Mesh_data>(context);
+
 
     return VIENNAMESH_SUCCESS;
 }

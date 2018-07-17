@@ -177,6 +177,26 @@ namespace viennamesh
 
     }
 
+    double mean_curvature_my(mesh_t::Vertex& vertex){
+
+
+        return mean_test(vertex);
+
+        
+
+       // return 0;
+
+    }
+
+    //for testint delte
+    double gauss_curvatures_my(mesh_t::Vertex& vertex){
+
+        return gauss_test(vertex);
+
+       // return 0;
+
+    }
+
 
     //generic types verwenden
     //needs array with 2 fields of floating type

@@ -50,8 +50,9 @@ public:
 
   //Curvature_cost() {}
 
-  template <typename Profile, typename T> 
-  optional<typename Profile::FT> operator()( Profile const& aProfile, T const& /*aPlacement*/ ) const
+  template <typename Profile> 
+  optional<typename Profile::FT> 
+  operator()( Profile const& aProfile, optional<typename Profile::Point> const& aPlacement ) const
   {
     typedef optional<typename Profile::FT> result_type;
 
@@ -59,12 +60,24 @@ public:
     double max_value = 100;
 
 
+
+    if(analytics.collection_over == true){
+
+        //std::cout << analytics.has_curvature(aProfile.v0()) << "    " << analytics.has_curvature(aProfile.v1()) << std::endl;
+
+    }
+
+
+   /* std::cout << "Placement in cost: "<<(*aPlacement) << std::endl;
+    std::cout << "profile 0 in cost: "<< aProfile.p0() << std::endl;
+    std::cout << "profile 1 in cost: "<< aProfile.p1() << std::endl;*/
+
     //if < 0 then the vertex is not part of the boundary
     if(analytics.get_color(aProfile.v0()) != -1 && analytics.get_color(aProfile.v1()) != -1){
 
       if(analytics.get_color(aProfile.v0()) == analytics.get_color(aProfile.v1())){
 
-        if(analytics.get_color(aProfile.v0()) % 2 == 1)
+        //if(analytics.get_color(aProfile.v0()) % 2 == 1)
           return result_type(50);
 
       }

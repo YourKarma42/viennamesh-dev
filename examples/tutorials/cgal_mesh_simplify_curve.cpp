@@ -28,10 +28,10 @@ int main(int argc, char **argv)
 
     if (argc > 3){
         std::string new_pol(argv[3]);
-        if(new_pol == "m" || new_pol == "lt"){
+        if(new_pol == "m" || new_pol == "lt" || new_pol == "p"){
             policy = new_pol;
         }else{
-            std::cout << "Wrong argument in 3: must be lt or m" << std::endl;
+            std::cout << "Wrong argument in 3: must be lt or m or p" << std::endl;
             std::cout << "Using standard m" << std::endl;
         }
     }

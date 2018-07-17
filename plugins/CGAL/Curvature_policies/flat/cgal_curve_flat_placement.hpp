@@ -1,7 +1,14 @@
 #include <CGAL/Surface_mesh_simplification/Detail/Common.h>
 
+//hash table to store curvatures
+#include <unordered_map>
 
 
+#include <iostream>
+#include <fstream>
+
+//analytics
+#include "../../analizing/cgal_mesh_analytics.hpp"
 
 
 namespace CGAL {
@@ -20,10 +27,16 @@ public:
 
 
 
+
+
 public:
 
-  Curvature_flat_placement()
-  {}
+
+  viennamesh::cgal::cgal_mesh_analytics<ECM>  & analytics;
+
+ 
+  Curvature_flat_placement(viennamesh::cgal::cgal_mesh_analytics<ECM>  & a) 
+  : analytics(a) {}
      
   template <typename Profile> 
   //optional<typename Profile::Point> //probably need a profile for later
@@ -33,6 +46,7 @@ public:
 
     return optional<typename Profile::Point>(midpoint(aProfile.p0(),aProfile.p1())) ;
   }
+  
 
 
 };
@@ -41,4 +55,17 @@ public:
 
 } //namespace CGAL
 
-//TODO:  #defines machen wie in cgal
+
+
+
+
+
+
+
+
+
+
+
+
+
+
