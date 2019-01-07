@@ -35,8 +35,8 @@ public:
   viennamesh::cgal::cgal_mesh_analytics<ECM>  & analytics;
 
  
-  Curvature_flat_placement(viennamesh::cgal::cgal_mesh_analytics<ECM>  & a) 
-  : analytics(a) {}
+  Curvature_flat_placement(viennamesh::cgal::cgal_mesh_analytics<ECM>  & a, LindstromTurk_params const& aParams = LindstromTurk_params()) 
+  : analytics(a), mParams(aParams) {}
      
   template <typename Profile> 
   //optional<typename Profile::Point> //probably need a profile for later
@@ -44,9 +44,13 @@ public:
   {
 
 
-    return optional<typename Profile::Point>(midpoint(aProfile.p0(),aProfile.p1())) ;
+    return LindstromTurkCore<ECM,Profile>(mParams,aProfile).compute_placement() ;
   }
   
+
+  private:
+
+   LindstromTurk_params mParams ;    
 
 
 };

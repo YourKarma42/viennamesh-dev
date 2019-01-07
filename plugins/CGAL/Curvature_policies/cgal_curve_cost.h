@@ -3,7 +3,7 @@
 //#include <CGAL/cgal_statistic_funktions.cpp>
 //#include "cgal_mesh.hpp"
 
-#include "../cgal_curvature_functions.hpp"
+//#include "../cgal_curvature_functions.hpp"
 
 
 #include <iostream>

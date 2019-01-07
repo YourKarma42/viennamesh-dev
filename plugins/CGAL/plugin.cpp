@@ -5,6 +5,8 @@
 #include "cgal_curve.hpp"
 #include "cgal_simplify_curve.hpp"
 #include "cgal_remove_short_edges.hpp"
+#include "cgal_compare_curvature_calculations.hpp"
+
 
 
 
@@ -25,6 +27,8 @@ viennamesh_error viennamesh_plugin_init(viennamesh_context context)
 
 
   viennamesh::register_algorithm<viennamesh::cgal::cgal_remove_short_edges>(context);
+
+  viennamesh::register_algorithm<viennamesh::cgal::cgal_compare_curvature_calculations>(context);
 
   return VIENNAMESH_SUCCESS;
 }

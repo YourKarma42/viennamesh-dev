@@ -19,6 +19,7 @@
 #include "viennameshpp/plugin.hpp"
 #include <CGAL/Simple_cartesian.h>
 #include <CGAL/Polyhedron_3.h>
+#include <CGAL/Plane_3.h>
 
 
 #ifndef CGALLIBRARY
@@ -34,6 +35,7 @@ namespace viennamesh
         typedef CGAL::Polyhedron_3<Kernel> polyhedron_surface_mesh;
         typedef Kernel::Point_3 Point_3;
         typedef Kernel::Vector_3 Vector_3;
+        typedef Kernel::Plane_3 Plane_3;
 
     }
 

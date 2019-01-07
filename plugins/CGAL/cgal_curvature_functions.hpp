@@ -32,7 +32,9 @@
 #include <CGAL/Curvature_policies/cgal_hash_points.hpp>
 
 //curvature testfunction
-#include <CGAL/curve_calc_dev/curve_test_1.hpp>
+//#include <CGAL/curve_calc_dev/curve_test_1.hpp>
+
+//#include "curve_calc_dev/curvature_calculator.hpp"
 
 //TODO: Rerwrite with template types!
 
@@ -47,6 +49,7 @@ namespace viennamesh
     typedef Kernel::Vector_3 Vector_3;
     typedef mesh_t::Face_handle Face;
     typedef mesh_t::Facet Facet_t;
+    //typedef polyhedron_surface_mesh mesh_t; 
     typedef CGAL::Monge_via_jet_fitting<Kernel>::Monge_form Monge_form;
 
     Vector_3 exproduct(Vector_3 a,Vector_3 b)
@@ -153,6 +156,30 @@ namespace viennamesh
     }
 
 
+    //______________________________Comparing Calculations______________________________________________________
+
+    /*bool principal_curvatures_my_time_test(mesh_t::Vertex& vertex, double  curvatures[]){
+
+        
+        calc_principle_curveatures(vertex, curvatures);
+
+        return true;
+    }*/
+
+    bool principal_curvatures_cgal_time_test(mesh_t::Vertex& vertex, mesh_t& mesh, double  curvatures[]){
+
+        Monge_form monge_form=get_monge_form (vertex,mesh);
+
+        curvatures[0] = monge_form.principal_curvatures(0); // max
+        curvatures[1] = monge_form.principal_curvatures(1); // min
+
+        return true;
+
+    }
+
+
+    //______________________________Comparing Calculations______________________________________________________
+
 
     //my
 
@@ -162,7 +189,7 @@ namespace viennamesh
         auto start = std::chrono::high_resolution_clock::now();
 
         
-        calc_principle_curveatures(vertex, curvatures);
+        //calc_principle_curveatures(vertex, curvatures);
 
         //curvatures[0] = 0;  // max
         //curvatures[1] = 0; // min
@@ -177,7 +204,7 @@ namespace viennamesh
 
     }
 
-    double mean_curvature_my(mesh_t::Vertex& vertex){
+   /* double mean_curvature_my(mesh_t::Vertex& vertex){
 
 
         return mean_test(vertex);
@@ -196,9 +223,9 @@ namespace viennamesh
        // return 0;
 
     }
+*/
 
 
-    //generic types verwenden
     //needs array with 2 fields of floating type
     double principal_curvatures_cgal(mesh_t::Vertex& vertex, mesh_t& mesh, double  curvatures[]){
 

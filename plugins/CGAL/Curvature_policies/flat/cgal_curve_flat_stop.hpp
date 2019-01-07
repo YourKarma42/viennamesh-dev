@@ -31,7 +31,8 @@ public:
   typedef typename boost::graph_traits<ECM>::edge_descriptor edge_descriptor ;
   typedef typename boost::graph_traits<ECM>::edges_size_type size_type ;
     
-  Curvature_flat_stop( double edge_length_threshold ) : m_edge_sq_length_threshold(edge_length_threshold*edge_length_threshold) {}
+  Curvature_flat_stop( double edge_length_threshold , viennamesh::cgal::cgal_mesh_analytics<ECM>  & a) 
+  : m_edge_sq_length_threshold(edge_length_threshold*edge_length_threshold), analytics(a) {}
   //already implemented in higher cgal versions this version is 4.8.1
   template <typename F> 
   bool operator()( F const&       // aCurrentCost
@@ -40,11 +41,11 @@ public:
                  , size_type         aCurrentCount
                  ) const 
   {
-    // probably another hard break if edge length = penalty
-  /*   std::cout << CGAL::squared_distance(aProfile.p0(), aProfile.p1())  << std::endl;
-      std::cout <<  m_edge_sq_length_threshold << std::endl;
-    std::cout << (CGAL::squared_distance(aProfile.p0(), aProfile.p1()) > m_edge_sq_length_threshold) << std::endl;
-    */
+
+
+    //subtract removed edges from number of edges counter
+
+    //analytics.reduce_flat_edges(aInitialCount - aCurrentCount);
 
     //as long as edges arnt too long
     return  CGAL::squared_distance(aProfile.p0(), aProfile.p1()) > m_edge_sq_length_threshold;
@@ -52,6 +53,8 @@ public:
   }
   
 private:
+
+  viennamesh::cgal::cgal_mesh_analytics<ECM>  & analytics;
   
   double m_edge_sq_length_threshold ;
 };    

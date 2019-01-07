@@ -189,7 +189,7 @@ namespace viennamesh
 
                 //clear old faces from the Mesh (creates holes)
                 //ERROR OCCURES HERE
-                //some halfedge are strangely linked with otehrs and produce errors depending on wich halfedges facet is choosen
+                //some halfedge (of different length) are strangely linked with otehrs and produce errors depending on wich halfedges facet is choosen
                 cgal::polyhedron_surface_mesh::Vertex::Halfedge_around_vertex_circulator at=v->vertex_begin(), end = at;
                 do{  
                        
@@ -251,6 +251,16 @@ namespace viennamesh
                 do{ 
                     if(at->opposite()->is_border()){
                         my_mesh.fill_hole(at->opposite());
+
+                        if(at->is_border()){                            
+                            info(5)<< "BAD EDGE nebeneinander" << std::endl;
+                        }
+
+                    }
+
+                    if(at->is_border()){
+                        my_mesh.fill_hole(at);
+                        info(5)<< "BAD EDGE" << std::endl;
 
                     }
                             

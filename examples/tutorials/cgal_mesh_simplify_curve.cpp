@@ -23,12 +23,13 @@ int main(int argc, char **argv)
 
     if (argc > 2){
         ratio = atof(argv[2]);
+        
     }
         
 
     if (argc > 3){
         std::string new_pol(argv[3]);
-        if(new_pol == "m" || new_pol == "lt" || new_pol == "p"){
+        if(new_pol == "m" || new_pol == "lt" || new_pol == "p" || new_pol == "mN1" || new_pol == "mN2"){
             policy = new_pol;
         }else{
             std::cout << "Wrong argument in 3: must be lt or m or p" << std::endl;
@@ -36,10 +37,19 @@ int main(int argc, char **argv)
         }
     }
 
+    double transition_el=0;
+    double flat_el=0;
+    
+    if (argc > 4){
 
-    if (argc > 4)
+      transition_el = atof(argv[4]);
+      flat_el = atof(argv[5]);
+    }
+
+    if (argc > 6)
     {
-        std::cout << "2 optional parameters: ratio as double | lindstom turk (lt) or my stuff (m)" << std::endl;
+        std::cout << "4 optional parameters: ratio as double | lindstom turk (lt) or my stuff (m)" << std::endl;
+        std::cout << "transition area edge length as double | flat area edge length as double" << std::endl;
         return 0;
     }
 
@@ -47,6 +57,9 @@ int main(int argc, char **argv)
 
     std::cout << "choosen policy: " << policy << std::endl;
 
+    std::cout << "choosen transition are edge length: " << transition_el << std::endl;
+
+    std::cout << "choosen flat area edge lenth: " << flat_el << std::endl;
 
     viennamesh::context_handle context;
 
@@ -63,6 +76,8 @@ int main(int argc, char **argv)
 
     test.set_input("ratio", ratio);
     test.set_input("policy", policy);
+    test.set_input("transition_el", transition_el);
+    test.set_input("flat_el", flat_el); 
 
     test.run();
 

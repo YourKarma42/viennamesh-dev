@@ -7,7 +7,7 @@
 #include <iostream>
 #include <fstream>
 
-#include "../cgal_curvature_functions.hpp"
+//#include "../cgal_curvature_functions.hpp"
 
 #include <CGAL/Curvature_policies/cgal_hash_points.hpp>
 

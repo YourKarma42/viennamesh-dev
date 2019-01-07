@@ -1,3 +1,15 @@
+SET(TARGET_H
+	curvature_calculator.hpp
+)
+
+
+SET(TARGET_SRC
+	curvature_calculator.cpp
+)
+
+#add_library(library STATIC curvature_calculator.hpp)
+#add_library(library curvature_calculator.cpp curvature_calculator.hpp)
+
 #Eigen include path
 message(STATUS "Including Eigen from System path")
 INCLUDE_DIRECTORIES ( "/usr/include/eigen3" )
@@ -25,12 +37,18 @@ if ( NOT Boost_FOUND )
   return()
 endif()
 
-VIENNAMESH_ADD_PLUGIN(cgal_module
- 		      plugin.cpp
+
+
+
+VIENNAMESH_ADD_PLUGIN(cgal_module plugin.cpp
  		      cgal_mesh.cpp
           cgal_mesh_simplification.cpp
 		      cgal_automatic_mesh_simplification.cpp
-		      cgal_curve.cpp
-		      cgal_simplify_curve.cpp
+					cgal_curve.cpp
 					cgal_remove_short_edges.cpp
+					cgal_compare_curvature_calculations.cpp 
+					cgal_simplify_curve.cpp
+					#needs to be added for .hpp
+					curvature_calculator.cpp
+
 					)

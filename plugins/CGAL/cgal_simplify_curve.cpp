@@ -44,23 +44,15 @@
 
 
 
-//my test placement policy
-#include <CGAL/Curvature_policies/cgal_curve_placement.h>
-
-//my test cost policy
-#include <CGAL/Curvature_policies/cgal_curve_cost.h>
-
-//my test stop prediction
-#include <CGAL/Curvature_policies/cgal_curve_stop.h>
 
 //hash table to store curvatures
 #include <unordered_map>
 
 //my hash function for unordered map
-#include <CGAL/Curvature_policies/cgal_hash_points.hpp>
+//#include <CGAL/Curvature_policies/cgal_hash_points.hpp>
 
 //curvature testfunction
-#include <CGAL/curve_calc_dev/curve_test_1.hpp>
+//#include <CGAL/curve_calc_dev/curve_test_1.hpp>
 
 //curvature testfunction
 #include <CGAL/analizing/cgal_mesh_analytics.hpp>
@@ -74,6 +66,18 @@
 #include "CGAL/Curvature_policies/flat/cgal_curve_flat_placement.hpp"
 #include "CGAL/Curvature_policies/flat/cgal_curve_flat_stop.hpp"
 
+#include "CGAL/Curvature_policies/features/cgal_curve_features_cost.hpp"
+#include "CGAL/Curvature_policies/features/cgal_curve_features_placement.hpp"
+#include "CGAL/Curvature_policies/features/cgal_curve_features_stop.hpp"
+
+#include "CGAL/Curvature_policies/curved/cgal_curve_curved_cost.hpp"
+#include "CGAL/Curvature_policies/curved/cgal_curve_curved_placement.hpp"
+#include "CGAL/Curvature_policies/curved/cgal_curve_curved_stop.hpp"
+
+
+#include <CGAL/Plane_3.h>
+#include <CGAL/Exact_predicates_exact_constructions_kernel.h>
+#include <CGAL/intersections.h>
 
 //Feature preservation
 #include <CGAL/boost/graph/graph_traits_Polyhedron_3.h>
@@ -82,6 +86,16 @@
 #include <CGAL/Unique_hash_map.h>
 
 
+
+typedef CGAL::Exact_predicates_exact_constructions_kernel K;
+typedef K::Point_2 Point_2;
+typedef K::Segment_2 Segment_2;
+typedef K::Line_2 Line_2;
+
+typedef K::Line_3 Line_3;
+//typedef K::Plane_3 Plane_3;
+typedef K::Intersect_3 Intersect_3;
+typedef K::Intersect_2 Intersect_2;
 
 
 namespace SMS = CGAL::Surface_mesh_simplification;
@@ -124,20 +138,12 @@ namespace viennamesh
 
             data_handle<viennagrid_numeric> input_ratio = get_input<viennagrid_numeric>("ratio");
 
-            data_handle<viennamesh_string> policy = get_required_input<viennamesh_string>("policy");          
+            data_handle<viennamesh_string> policy = get_required_input<viennamesh_string>("policy");     
 
-            //_________________________Testing_Area_______________________________________________________
-            // clear costs file
+            data_handle<viennagrid_numeric> transition_el = get_required_input<viennagrid_numeric>("transition_el");
 
-            std::ofstream myfile;
-            myfile.open ("costs.txt");
-            if (myfile.is_open()){  
-        
-              myfile << "";
-              myfile.close();
-            }
+            data_handle<viennagrid_numeric> flat_el = get_required_input<viennagrid_numeric>("flat_el");     
 
-            //_________________________END_Testing_Area_______________________________________________________
             
             //Get mesh data (REQUIRED)
             data_handle<cgal::polyhedron_surface_mesh> input_mesh = get_required_input<cgal::polyhedron_surface_mesh>("mesh");
@@ -171,6 +177,8 @@ namespace viennamesh
 
             std::vector<double> time_for_curves;
 
+            info(1) << "Running analytics" << std::endl;
+
 
             auto start = std::chrono::high_resolution_clock::now();
 
@@ -183,7 +191,7 @@ namespace viennamesh
 
             finish = std::chrono::high_resolution_clock::now();
 
-            info(1) << "runtime analytics: " << std::chrono::duration_cast<std::chrono::seconds>(finish-start).count() << " s" << std::endl;
+            info(1) << "runtime analytics: " << std::chrono::duration_cast<std::chrono::microseconds>(finish-start).count() << " mus" << std::endl;
 
             //cgal_mesh_analytics<cgal::polyhedron_surface_mesh> test(1.0,2.0,3.0);
 
@@ -192,7 +200,7 @@ namespace viennamesh
 
             //create Hashtable to store curvatures
             //move into if statment
-            std::unordered_map<Point_3, viennamesh::cgal::vertex_statistics, Point_3_Hash, Point_3_Equal> curvatures;
+            //std::unordered_map<Point_3, viennamesh::cgal::vertex_statistics, Point_3_Hash, Point_3_Equal> curvatures;
 
            
 
@@ -228,7 +236,7 @@ namespace viennamesh
 
                 //------------------------------------step one edge------------------------------
 
-                SMS::Curvature_boundary_placement<cgal::polyhedron_surface_mesh> placement_test(analytics); //atm midpoint
+/*               SMS::Curvature_boundary_placement<cgal::polyhedron_surface_mesh> placement_test(analytics); //atm midpoint
            
                 SMS::Curvature_boundary_cost<cgal::polyhedron_surface_mesh> cost_test(analytics); //atm my curve cost
 
@@ -243,14 +251,124 @@ namespace viennamesh
                 removed_edges += removed_edges_this_step;
 
                 info(1) << "removed boundary edges:" << removed_edges_this_step << std::endl;
-                info(1) << "runtime boundary edges: " << std::chrono::duration_cast<std::chrono::seconds>(finish-start).count() << " s" << std::endl; 
+                info(1) << "runtime boundary edges: " << std::chrono::duration_cast<std::chrono::microseconds>(finish-start).count() << " mus" << std::endl; 
+*/
 
-                //------------------------------- Step 2 flat plane------------------------------
+                //------------------------------- Step 1 curved area------------------------------
+
+
+                //SMS::Curvature_curved_placement<cgal::polyhedron_surface_mesh> placement_curved(analytics); //atm midpoint
+
+               // SMS::Curvature_curved_cost<cgal::polyhedron_surface_mesh> 
+                //     cost_curved(analytics, SMS::LindstromTurk_params(volume_weight,boundary_weight,shape_weight)); //atm my curve cost
+
+                SMS::LindstromTurk_placement<cgal::polyhedron_surface_mesh> 
+                    lt_placement(SMS::LindstromTurk_params(volume_weight,boundary_weight,shape_weight));
+
+ /*               SMS::Curvature_curved_cost<cgal::polyhedron_surface_mesh> 
+                    cost_curved(analytics, SMS::LindstromTurk_params(volume_weight,boundary_weight,shape_weight));
+
+                SMS::Curvature_curved_stop<cgal::polyhedron_surface_mesh> stop_curved(0.3, analytics);
+                //SMS::Count_ratio_stop_predicate<cgal::polyhedron_surface_mesh> stop( 0.2 );
+
+                start = std::chrono::high_resolution_clock::now();
+
+*/
+
+    //            removed_edges_this_step = smart_edge_collapse(my_mesh, /*stop*/ stop_curved, cost_curved, lt_placement /*placement_curved*/);
+
+   /*             finish = std::chrono::high_resolution_clock::now();
+
+                info(1) << "removed curved edges:" << removed_edges_this_step << std::endl;
+                info(1) << "runtime curved edges: " << std::chrono::duration_cast<std::chrono::microseconds>(finish-start).count() << " mus" << std::endl;
+
+
+                
+                
+               
+                removed_edges += removed_edges_this_step;
+*/
+
+info(1) << "AVERAGE EDGE LENGHT CURVED:" << analytics.average_length_curved_edges() << std::endl;
+
+
+
+ //------------------------------- Step 3 flat plane------------------------------
+                
                 SMS::Curvature_flat_placement<cgal::polyhedron_surface_mesh> placement_flat(analytics); //atm midpoint
+
+
+           
 
                 SMS::Curvature_flat_cost<cgal::polyhedron_surface_mesh> cost_flat(analytics); //atm my curve cost
 
-                SMS::Curvature_flat_stop<cgal::polyhedron_surface_mesh> stop_flat(0.316);
+                SMS::Curvature_flat_stop<cgal::polyhedron_surface_mesh> stop_flat(flat_el(), analytics);
+
+                start = std::chrono::high_resolution_clock::now();
+
+                removed_edges_this_step = smart_edge_collapse(my_mesh, stop_flat, cost_flat, lt_placement);
+
+                finish = std::chrono::high_resolution_clock::now();
+
+                info(1) << "removed flat edges:" << removed_edges_this_step << std::endl;
+                info(1) << "runtime flat edges: " << std::chrono::duration_cast<std::chrono::microseconds>(finish-start).count() << " mus" << std::endl;
+
+                //reduce counter of flat edges
+                //analytics.reduce_flat_edges(removed_edges_this_step);
+
+                analytics.calculate_metrics();
+
+
+                info(1) << "flat edeges:" << analytics.get_num_flat_edges() << std::endl;
+
+                removed_edges += removed_edges_this_step;
+
+
+                //------------------------------------step 2 transition area------------------------------
+
+
+                viennagrid_numeric transition_volume_weight = 0.1;
+                viennagrid_numeric transition_boundary_weight = 0.5;
+                viennagrid_numeric transition_shape_weight = 1.0;
+
+                SMS::Curvature_features_placement<cgal::polyhedron_surface_mesh> 
+                  placement_transition(analytics, SMS::LindstromTurk_params(transition_volume_weight,transition_boundary_weight,transition_shape_weight));
+
+
+                SMS::Curvature_features_cost<cgal::polyhedron_surface_mesh> cost_transition(
+                    analytics, SMS::LindstromTurk_params(volume_weight,boundary_weight,shape_weight)); //atm my curve cost
+
+                SMS::Curvature_features_stop<cgal::polyhedron_surface_mesh> stop_transition(analytics, transition_el());
+
+                
+
+                start = std::chrono::high_resolution_clock::now();
+
+                //removed_edges_this_step = smart_edge_collapse(my_mesh, stop_transition, cost_transition, placement_transition);
+
+                finish = std::chrono::high_resolution_clock::now();
+
+                removed_edges += removed_edges_this_step;
+
+                info(1) << "removed transition edges:" << removed_edges_this_step << std::endl;
+                info(1) << "runtime transition edges: " << std::chrono::duration_cast<std::chrono::microseconds>(finish-start).count() << " mus" << std::endl; 
+
+            } else if(policy() == "mN1"){
+
+#pragma region me_noox_1
+
+                int edge_edges=0;
+
+                int ecke=0;
+
+
+                //------------------------------- Step 1 flat plane------------------------------
+                
+                SMS::Curvature_flat_placement<cgal::polyhedron_surface_mesh> placement_flat(analytics); //atm midpoint         
+
+                SMS::Curvature_flat_cost<cgal::polyhedron_surface_mesh> cost_flat(analytics); //atm my curve cost
+
+                SMS::Curvature_flat_stop<cgal::polyhedron_surface_mesh> stop_flat(flat_el(), analytics);
 
                 start = std::chrono::high_resolution_clock::now();
 
@@ -259,37 +377,54 @@ namespace viennamesh
                 finish = std::chrono::high_resolution_clock::now();
 
                 info(1) << "removed flat edges:" << removed_edges_this_step << std::endl;
-                info(1) << "runtime flat edges: " << std::chrono::duration_cast<std::chrono::seconds>(finish-start).count() << " s" << std::endl;
+                info(1) << "runtime flat edges: " << std::chrono::duration_cast<std::chrono::microseconds>(finish-start).count() << " mus" << std::endl;
+
+                //reduce counter of flat edges
+                //analytics.reduce_flat_edges(removed_edges_this_step);
+
+                analytics.calculate_metrics();
+
+
+                info(1) << "flat edeges:" << analytics.get_num_flat_edges() << std::endl;
 
                 removed_edges += removed_edges_this_step;
 
 
-
-                //outputs for development
-
-                //info(1) << Hashtable_Statistics(curvatures) << std::endl;
-
-               // info(1) << curvature_output(curvatures) << std::endl;
-
-               // info(1) << "!!!!!!!!!! Eck Kanten: " << edge_edges << std::endl;
-
-               // info(1) << "!!!!!!!!!! ECKEN placement: " << ecke << std::endl;
+                //------------------------------------step 2 transition area------------------------------
 
 
-                /*std::ofstream myfile;
-                myfile.open ("costs.txt", std::ios_base::app);
-                if (myfile.is_open()){
+                viennagrid_numeric transition_volume_weight = 0.1;
+                viennagrid_numeric transition_boundary_weight = 0.5;
+                viennagrid_numeric transition_shape_weight = 1.0;
 
-                    for ( auto &it : curvatures ){
+                SMS::Curvature_features_placement<cgal::polyhedron_surface_mesh> 
+                  placement_transition(analytics, SMS::LindstromTurk_params(transition_volume_weight,transition_boundary_weight,transition_shape_weight));
 
-                        myfile << (it.second).first << " " << (it.second).second << "\n";
-                    }
-                    
-                    }
-                myfile.close();*/
 
+                SMS::Curvature_features_cost<cgal::polyhedron_surface_mesh> cost_transition(
+                    analytics, SMS::LindstromTurk_params(volume_weight,boundary_weight,shape_weight)); //atm my curve cost
+
+                SMS::Curvature_features_stop<cgal::polyhedron_surface_mesh> stop_transition(analytics, transition_el());
+
+                
+
+                start = std::chrono::high_resolution_clock::now();
+
+                removed_edges_this_step = smart_edge_collapse(my_mesh, stop_transition, cost_transition, placement_transition);
+
+                finish = std::chrono::high_resolution_clock::now();
+
+                removed_edges += removed_edges_this_step;
+
+                info(1) << "removed transition edges:" << removed_edges_this_step << std::endl;
+                info(1) << "runtime transition edges: " << std::chrono::duration_cast<std::chrono::microseconds>(finish-start).count() << " mus" << std::endl; 
+
+
+#pragma endregion
+            } else if(policy() == "mN2"){
 
             }
+
 
 
 
@@ -393,8 +528,27 @@ namespace viennamesh
                                 1,                                        // one float per element
                                 VIENNAGRID_QUANTITY_FIELD_STORAGE_SPARSE);
 
+                //create one quantity
+                viennagrid_quantity_field quantity_field5=0;
+                viennagrid_quantity_field_create(&quantity_field5);
 
-                                                
+                //set the type of the quantity
+                viennagrid_quantity_field_init(quantity_field5,
+                                VIENNAGRID_ELEMENT_TYPE_VERTEX ,                                        // topological dimension of the elements
+                                VIENNAGRID_QUANTITY_FIELD_TYPE_NUMERIC,   // floats
+                                1,                                        // one float per element
+                                VIENNAGRID_QUANTITY_FIELD_STORAGE_SPARSE);
+ 
+                //create one quantity
+                viennagrid_quantity_field quantity_field6=0;
+                viennagrid_quantity_field_create(&quantity_field6);
+
+                //set the type of the quantity
+                viennagrid_quantity_field_init(quantity_field6,
+                                VIENNAGRID_ELEMENT_TYPE_VERTEX ,                                        // topological dimension of the elements
+                                VIENNAGRID_QUANTITY_FIELD_TYPE_NUMERIC,   // floats
+                                1,                                        // one float per element
+                                VIENNAGRID_QUANTITY_FIELD_STORAGE_SPARSE);
                 info(1)  << "----------------++++++++++++++++++ cgal_curve ++++++++++++++++++----------------" << std::endl;
 
 
@@ -523,7 +677,12 @@ namespace viennamesh
 
                     double d = analytics.get_p2(at);
 
-                    double e=analytics.get_color(at);
+                    double e = analytics.get_transition_area(at);
+
+                    double f = analytics.get_feature(at);
+
+                    double g = analytics.get_curved_area(at);
+
 
                     /*if(analytics.get_color(at) >= 0){
                         if(analytics.get_color(at) == 1){
@@ -546,6 +705,12 @@ namespace viennamesh
 
                         viennagrid_quantity_field_value_set(quantity_field4,id,
                             &(e));
+
+                        viennagrid_quantity_field_value_set(quantity_field5,id,
+                            &(f));
+
+                        viennagrid_quantity_field_value_set(quantity_field6,id,
+                            &(g));
 
 
                     id++;
@@ -595,6 +760,12 @@ namespace viennamesh
                 viennagrid_quantity_field_name_set(quantity_field4,"tracing_test");
                 quantity_fields.push_back(quantity_field4);
 
+                viennagrid_quantity_field_name_set(quantity_field5,"features");
+                quantity_fields.push_back(quantity_field5);
+
+                viennagrid_quantity_field_name_set(quantity_field6,"curved area");
+                quantity_fields.push_back(quantity_field6);
+
                 
 
                 //export quantities
@@ -602,7 +773,9 @@ namespace viennamesh
                 quantity_field_handle.push_back(to_cpp(quantity_fields[1]));    
                 quantity_field_handle.push_back(to_cpp(quantity_fields[2])); 
                 quantity_field_handle.push_back(to_cpp(quantity_fields[3]));
-                quantity_field_handle.push_back(to_cpp(quantity_fields[4]));       
+                quantity_field_handle.push_back(to_cpp(quantity_fields[4]));
+                quantity_field_handle.push_back(to_cpp(quantity_fields[5]));  
+                quantity_field_handle.push_back(to_cpp(quantity_fields[6]));        
                 set_output("quantities",quantity_field_handle);
 
 #pragma endregion
@@ -622,18 +795,77 @@ namespace viennamesh
             {
 
                
-               /* if(fabs((*at).point().x() - 1.0) <= 0.00001 &&
-                   fabs((*at).point().y() - 0.0) <= 0.00001 &&
-                   fabs((*at).point().z() - 0.5) <= 0.00001) {   
+                if(fabs((*at).point().x() +0.53125) <= 0.00001 &&
+                   fabs((*at).point().y() - 0.5) <= 0.00001 &&
+                   fabs((*at).point().z() + 0.00625) <= 0.00001) {   
+                    
+                    
+                    cgal::polyhedron_surface_mesh::Vertex::Halfedge_around_vertex_circulator at1=(*at).vertex_begin(), end1 = at1;
+
+                    std::vector<Point_3> points;
+
+                    std::vector<Point_3> points2;
+
+                    std::cout << "GAGAGAGAGAGAGGAGA";
+
+                    Plane_3 test_plane1, test_plane2;
+
+                    do{
+                        if(analytics.get_feature(at1->opposite()->vertex()) == -1){
+                            points.push_back(at->point());
+                        }
+
+                        if (points.size() == 2){
+
+                            test_plane1 = Plane_3(points[0], points[1], (*at).point());
+
+                            break;
+                        }
+
+                        
+                        at1++;
+                    }while(at1 != end1);
+
+                    at1=(*at).vertex_begin();
+                    end1 = at1;
+
+                    do{
+                        if(analytics.get_feature(at1->opposite()->vertex()) == 35){
+                            points2.push_back(at->point());
+                        }
+
+                        if (points2.size() == 2){
+
+                            test_plane2 = Plane_3(points2[0], points2[1], (*at).point());
+
+                            break;
+                        }
+
+                        
+                        at1++;
+                    }while(at1 != end1);
+
+
+                    /*CGAL::cpp11::result_of<Intersect_2( Plane_3, Plane_3)>::type
+                    result = intersection(test_plane2, test_plane1);
+*/
+
+
+                    
+                }
+    /*
+                if(fabs((*at).point().x() - 1.76875) <= 0.00001 &&
+                   fabs((*at).point().y() + 0.00625) <= 0.00001 &&
+                   fabs((*at).point().z() + 0.000000000000000019082) <= 0.00001) {   
                     
                     info(1) << "&& Schlecht &&" <<std::endl;
                     info(1) << (*at).point() <<std::endl; 
-                    info(1) << mean_test(*at) <<std::endl; 
+                    //info(1) << mean_test(*at) <<std::endl; 
                     info(1) << my_curvature_test_print(*at) <<std::endl;
                     
-                }
+                }*/
 
-               
+               /*
                 if(fabs((*at).point().x() - 1.0) <= 0.00001 &&
                    fabs((*at).point().y() - 0.0) <= 0.00001 &&
                    fabs((*at).point().z() - 0.0) <= 0.00001) {   

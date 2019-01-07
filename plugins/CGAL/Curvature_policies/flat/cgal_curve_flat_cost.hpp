@@ -72,7 +72,7 @@ public:
 
     //std::cout<< analytics.get_mean(aProfile.v0()) << std::endl;
     
-
+/*
     if(analytics.has_curvature(aProfile.v0())){
         c1 = analytics.get_mean(aProfile.v0());
         //std::cout<< "blubb" << std::endl;
@@ -87,9 +87,11 @@ public:
     }else{
         c2=0;
         std::cout<< "blubb" << std::endl;
-    }
+    }*/
 
-    if(c1 < flat_boundary && c2 < flat_boundary){
+    //if(c1 < flat_boundary && c2 < flat_boundary){
+    if((analytics.get_feature(aProfile.v0()) == -1) && (analytics.get_feature(aProfile.v1()) == -1)
+        && (analytics.get_transition_area(aProfile.v0()) == -1) && (analytics.get_transition_area(aProfile.v1()) == -1)){
        //std::cout << CGAL::squared_distance(aProfile.p0(), aProfile.p1()) << std::endl;
         return CGAL::squared_distance(aProfile.p0(), aProfile.p1());
 
