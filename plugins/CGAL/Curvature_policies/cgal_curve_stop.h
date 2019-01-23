@@ -2,7 +2,7 @@
 #include <CGAL/Surface_mesh_simplification/Policies/Edge_collapse/Edge_profile.h>
 
 
-#include "../cgal_curvature_functions.hpp"
+//#include "../cgal_curvature_functions.hpp"
 
 namespace CGAL {
 
@@ -41,7 +41,7 @@ public:
                  , size_type         aCurrentCount
                  ) const 
   {
-    double flat_boundary = 0.00001;
+   /* double flat_boundary = 0.00001;
 
     double c1 = viennamesh::cgal::mean_curvature_my(*(aProfile.v0()));
 
@@ -56,9 +56,13 @@ public:
         
     }else{
       return true;
-    }
+    }*/
     
     //return ( static_cast<double>(aCurrentCount) / static_cast<double>(aInitialCount) ) < mRatio ;
+
+    return CGAL::squared_distance(aProfile.p0(), aProfile.p1()) > mRatio;
+
+
   }
   
 private:

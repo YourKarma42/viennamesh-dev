@@ -24,7 +24,9 @@ VIENNAMESH_ADD_PLUGIN( viennamesh-module-vtk
         vtk_quadric_decimation.cpp
         vtk_mesh_quality.cpp
         vtk_clean.cpp
+        vtk_mesh_distance.cpp
         vtk_print_mesh_data.cpp
+        vtk_calculate_mesh_quality_metrics.cpp
         )
 
 target_link_libraries(viennamesh-module-vtk ${VTK_LIBRARIES} ${VTK_3RD_PARTY_LIBRARIES} )

@@ -2,6 +2,8 @@
 #include <CGAL/Surface_mesh_simplification/Policies/Edge_collapse/Edge_profile.h>
 
 
+//analytics
+#include "../../analizing/cgal_mesh_analytics.hpp"
 
 namespace CGAL {
 
@@ -20,7 +22,7 @@ namespace Surface_mesh_simplification
 // Stops when the ratio of initial to current vertex pairs is below some value.
 //
 template<class ECM_>    
-class Curvature_flat_stop
+class Curvature_curved_stop
 {
 public:
 
@@ -31,9 +33,10 @@ public:
   typedef typename boost::graph_traits<ECM>::edge_descriptor edge_descriptor ;
   typedef typename boost::graph_traits<ECM>::edges_size_type size_type ;
     
-  Curvature_flat_stop( double edge_length_threshold , viennamesh::cgal::cgal_mesh_analytics<ECM>  & a) 
-  : m_edge_sq_length_threshold(edge_length_threshold*edge_length_threshold), analytics(a) {}
-  //already implemented in higher cgal versions this version is 4.8.1
+  Curvature_curved_stop( double curved_stop_ratio, viennamesh::cgal::cgal_mesh_analytics<ECM>  & a ) 
+  : m_curved_stop_ratio(curved_stop_ratio), analytics(a)
+  {}
+
   template <typename F> 
   bool operator()( F const&       // aCurrentCost
                  , Profile const&    aProfile
@@ -41,14 +44,13 @@ public:
                  , size_type         aCurrentCount
                  ) const 
   {
+      //ändern
+    int init_num_curved_edges = aInitialCount - analytics.get_num_flat_edges() - analytics.get_num_curved_edges();
 
-
-    //subtract removed edges from number of edges counter
-
-    //analytics.reduce_flat_edges(aInitialCount - aCurrentCount);
+    return std::sqrt(CGAL::squared_distance(aProfile.p0(), aProfile.p1())) > m_curved_stop_ratio;
 
     //as long as edges arnt too long
-    return  std::sqrt(CGAL::squared_distance(aProfile.p0(), aProfile.p1())) > m_edge_sq_length_threshold;
+    //return  ((static_cast<double>(aCurrentCount - analytics.get_num_flat_edges() - analytics.get_num_curved_edges()) / static_cast<double>(init_num_curved_edges) )< m_curved_stop_ratio);
     
   }
   
@@ -56,7 +58,7 @@ private:
 
   viennamesh::cgal::cgal_mesh_analytics<ECM>  & analytics;
   
-  double m_edge_sq_length_threshold ;
+  double m_curved_stop_ratio ;
 };    
 
 } // namespace Surface_mesh_simplification

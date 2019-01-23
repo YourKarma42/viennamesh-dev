@@ -44,6 +44,9 @@
 
 
 
+#include "CGAL/Curvature_policies/cgal_curve_cost.h"
+#include "CGAL/Curvature_policies/cgal_flat_cost_p.h"
+
 
 //hash table to store curvatures
 #include <unordered_map>
@@ -73,6 +76,9 @@
 #include "CGAL/Curvature_policies/curved/cgal_curve_curved_cost.hpp"
 #include "CGAL/Curvature_policies/curved/cgal_curve_curved_placement.hpp"
 #include "CGAL/Curvature_policies/curved/cgal_curve_curved_stop.hpp"
+
+
+#include "CGAL/Curvature_policies/cgal_curve_stop.h"
 
 
 #include <CGAL/Plane_3.h>
@@ -162,9 +168,9 @@ namespace viennamesh
 
             //Lindstrom Turk policies
 
-            viennagrid_numeric volume_weight = 0.1;
-            viennagrid_numeric boundary_weight = 0.5;
-            viennagrid_numeric shape_weight = 0.4;
+            viennagrid_numeric volume_weight = 0.4;
+            viennagrid_numeric boundary_weight = 0.3;
+            viennagrid_numeric shape_weight = 0.3;
 
             viennagrid_numeric ratio_of_edges = input_ratio();
 
@@ -193,6 +199,7 @@ namespace viennamesh
 
             info(1) << "runtime analytics: " << std::chrono::duration_cast<std::chrono::microseconds>(finish-start).count() << " mus" << std::endl;
 
+            double runtime_analytics = std::chrono::duration_cast<std::chrono::microseconds>(finish-start).count();
             //cgal_mesh_analytics<cgal::polyhedron_surface_mesh> test(1.0,2.0,3.0);
 
 
@@ -202,16 +209,29 @@ namespace viennamesh
             //move into if statment
             //std::unordered_map<Point_3, viennamesh::cgal::vertex_statistics, Point_3_Hash, Point_3_Equal> curvatures;
 
-           
+           double total_runtime = runtime_analytics;
 
 
             if(policy() == "lt"){
 
                 //Lindstrom Turk policys
 
+
+                //test
+
+                SMS::Curvature_curved_cost<cgal::polyhedron_surface_mesh> 
+                    cost_test(analytics, SMS::LindstromTurk_params(volume_weight,boundary_weight,shape_weight));
+
+
+                total_runtime = 0.0;
+
                 SMS::LindstromTurk_cost<cgal::polyhedron_surface_mesh> cost(SMS::LindstromTurk_params(volume_weight,boundary_weight,shape_weight));
 
                 SMS::Count_ratio_stop_predicate<cgal::polyhedron_surface_mesh> stop( ratio_of_edges );
+
+                //edge length
+                SMS::Curvature_stop_predicate<cgal::polyhedron_surface_mesh> stop_2( ratio_of_edges* ratio_of_edges);
+                
 
 
                 SMS::LindstromTurk_placement<cgal::polyhedron_surface_mesh> placement(SMS::LindstromTurk_params(volume_weight,boundary_weight,shape_weight));
@@ -221,6 +241,10 @@ namespace viennamesh
                 removed_edges = smart_edge_collapse(my_mesh, stop, cost, placement);
 
                 finish = std::chrono::high_resolution_clock::now();
+
+                total_runtime = total_runtime + std::chrono::duration_cast<std::chrono::microseconds>(finish-start).count();
+
+
 
             }else if(policy() == "m"){
 
@@ -252,67 +276,42 @@ namespace viennamesh
 
                 info(1) << "removed boundary edges:" << removed_edges_this_step << std::endl;
                 info(1) << "runtime boundary edges: " << std::chrono::duration_cast<std::chrono::microseconds>(finish-start).count() << " mus" << std::endl; 
-*/
-
-                //------------------------------- Step 1 curved area------------------------------
-
-
-                //SMS::Curvature_curved_placement<cgal::polyhedron_surface_mesh> placement_curved(analytics); //atm midpoint
-
-               // SMS::Curvature_curved_cost<cgal::polyhedron_surface_mesh> 
-                //     cost_curved(analytics, SMS::LindstromTurk_params(volume_weight,boundary_weight,shape_weight)); //atm my curve cost
-
-                SMS::LindstromTurk_placement<cgal::polyhedron_surface_mesh> 
-                    lt_placement(SMS::LindstromTurk_params(volume_weight,boundary_weight,shape_weight));
-
- /*               SMS::Curvature_curved_cost<cgal::polyhedron_surface_mesh> 
-                    cost_curved(analytics, SMS::LindstromTurk_params(volume_weight,boundary_weight,shape_weight));
-
-                SMS::Curvature_curved_stop<cgal::polyhedron_surface_mesh> stop_curved(0.3, analytics);
-                //SMS::Count_ratio_stop_predicate<cgal::polyhedron_surface_mesh> stop( 0.2 );
-
-                start = std::chrono::high_resolution_clock::now();
 
 */
 
-    //            removed_edges_this_step = smart_edge_collapse(my_mesh, /*stop*/ stop_curved, cost_curved, lt_placement /*placement_curved*/);
-
-   /*             finish = std::chrono::high_resolution_clock::now();
-
-                info(1) << "removed curved edges:" << removed_edges_this_step << std::endl;
-                info(1) << "runtime curved edges: " << std::chrono::duration_cast<std::chrono::microseconds>(finish-start).count() << " mus" << std::endl;
-
-
-                
-                
+ 
                
-                removed_edges += removed_edges_this_step;
-*/
-
-info(1) << "AVERAGE EDGE LENGHT CURVED:" << analytics.average_length_curved_edges() << std::endl;
 
 
 
- //------------------------------- Step 3 flat plane------------------------------
+//------------------------------- Step 3 flat plane------------------------------
+
+
+                viennagrid_numeric flat_volume_weight = 0.0;
+                viennagrid_numeric flat_boundary_weight = 0.4;
+                viennagrid_numeric flat_shape_weight = 0.6;
                 
-                SMS::Curvature_flat_placement<cgal::polyhedron_surface_mesh> placement_flat(analytics); //atm midpoint
+                SMS::Curvature_flat_placement<cgal::polyhedron_surface_mesh> 
+                   placement_flat(analytics, SMS::LindstromTurk_params(flat_volume_weight,flat_boundary_weight,flat_shape_weight)); 
 
 
            
 
-                SMS::Curvature_flat_cost<cgal::polyhedron_surface_mesh> cost_flat(analytics); //atm my curve cost
+                SMS::Curvature_flat_cost<cgal::polyhedron_surface_mesh> 
+                cost_flat(analytics, SMS::LindstromTurk_params(flat_volume_weight,flat_boundary_weight,flat_shape_weight)); 
 
                 SMS::Curvature_flat_stop<cgal::polyhedron_surface_mesh> stop_flat(flat_el(), analytics);
 
                 start = std::chrono::high_resolution_clock::now();
 
-                removed_edges_this_step = smart_edge_collapse(my_mesh, stop_flat, cost_flat, lt_placement);
+                removed_edges_this_step = smart_edge_collapse(my_mesh, stop_flat, cost_flat, placement_flat);
 
                 finish = std::chrono::high_resolution_clock::now();
 
                 info(1) << "removed flat edges:" << removed_edges_this_step << std::endl;
                 info(1) << "runtime flat edges: " << std::chrono::duration_cast<std::chrono::microseconds>(finish-start).count() << " mus" << std::endl;
 
+                total_runtime = total_runtime + std::chrono::duration_cast<std::chrono::microseconds>(finish-start).count();
                 //reduce counter of flat edges
                 //analytics.reduce_flat_edges(removed_edges_this_step);
 
@@ -324,12 +323,62 @@ info(1) << "AVERAGE EDGE LENGHT CURVED:" << analytics.average_length_curved_edge
                 removed_edges += removed_edges_this_step;
 
 
-                //------------------------------------step 2 transition area------------------------------
 
 
-                viennagrid_numeric transition_volume_weight = 0.1;
-                viennagrid_numeric transition_boundary_weight = 0.5;
-                viennagrid_numeric transition_shape_weight = 1.0;
+               
+
+
+//------------------------------- Step 1 curved area------------------------------
+
+                viennagrid_numeric curve_volume_weight = 0.4;
+                viennagrid_numeric curve_boundary_weight = 0.3;
+                viennagrid_numeric curve_shape_weight = 0.3;
+
+
+                //SMS::Curvature_curved_placement<cgal::polyhedron_surface_mesh> placement_curved(analytics); //atm midpoint
+
+               // SMS::Curvature_curved_cost<cgal::polyhedron_surface_mesh> 
+                //     cost_curved(analytics, SMS::LindstromTurk_params(volume_weight,boundary_weight,shape_weight)); //atm my curve cost
+
+                SMS::LindstromTurk_placement<cgal::polyhedron_surface_mesh> 
+                    lt_placement(SMS::LindstromTurk_params(curve_volume_weight,curve_boundary_weight,curve_shape_weight));
+
+                SMS::Curvature_curved_cost<cgal::polyhedron_surface_mesh> 
+                    cost_curved(analytics, SMS::LindstromTurk_params(curve_volume_weight,curve_boundary_weight,curve_shape_weight));
+
+                SMS::Curvature_curved_stop<cgal::polyhedron_surface_mesh> stop_curved(ratio_of_edges, analytics);
+                //SMS::Count_ratio_stop_predicate<cgal::polyhedron_surface_mesh> stop( 0.2 );
+
+                start = std::chrono::high_resolution_clock::now();
+
+
+
+               removed_edges_this_step = smart_edge_collapse(my_mesh, /*stop*/ stop_curved, cost_curved, lt_placement /*placement_curved*/);
+
+                finish = std::chrono::high_resolution_clock::now();
+
+                info(1) << "removed curved edges:" << removed_edges_this_step << std::endl;
+                info(1) << "runtime curved edges: " << std::chrono::duration_cast<std::chrono::microseconds>(finish-start).count() << " mus" << std::endl;
+
+                total_runtime = total_runtime + std::chrono::duration_cast<std::chrono::microseconds>(finish-start).count();
+
+                
+                
+               
+                removed_edges += removed_edges_this_step;
+
+
+                info(1) << "AVERAGE EDGE LENGHT CURVED:" << analytics.average_length_curved_edges() << std::endl;
+
+ 
+
+ //------------------------------------step 2 transition area------------------------------
+
+                analytics.extend_transition_area();
+
+                viennagrid_numeric transition_volume_weight = 0.0;
+                viennagrid_numeric transition_boundary_weight = 0.2;
+                viennagrid_numeric transition_shape_weight = 0.8;
 
                 SMS::Curvature_features_placement<cgal::polyhedron_surface_mesh> 
                   placement_transition(analytics, SMS::LindstromTurk_params(transition_volume_weight,transition_boundary_weight,transition_shape_weight));
@@ -344,7 +393,7 @@ info(1) << "AVERAGE EDGE LENGHT CURVED:" << analytics.average_length_curved_edge
 
                 start = std::chrono::high_resolution_clock::now();
 
-                //removed_edges_this_step = smart_edge_collapse(my_mesh, stop_transition, cost_transition, placement_transition);
+                removed_edges_this_step = smart_edge_collapse(my_mesh, stop_transition, cost_transition, placement_transition);
 
                 finish = std::chrono::high_resolution_clock::now();
 
@@ -352,6 +401,93 @@ info(1) << "AVERAGE EDGE LENGHT CURVED:" << analytics.average_length_curved_edge
 
                 info(1) << "removed transition edges:" << removed_edges_this_step << std::endl;
                 info(1) << "runtime transition edges: " << std::chrono::duration_cast<std::chrono::microseconds>(finish-start).count() << " mus" << std::endl; 
+                
+                total_runtime = total_runtime + std::chrono::duration_cast<std::chrono::microseconds>(finish-start).count();
+
+
+
+
+
+                
+
+
+            } else if(policy() == "fcp"){
+
+                //------------------------------- Step 1 flat plane------------------------------
+
+
+                viennagrid_numeric flat_volume_weight = 0.0;
+                viennagrid_numeric flat_boundary_weight = 0.4;
+                viennagrid_numeric flat_shape_weight = 0.6;
+                
+                SMS::Curvature_flat_placement<cgal::polyhedron_surface_mesh> 
+                   placement_flat(analytics, SMS::LindstromTurk_params(flat_volume_weight,flat_boundary_weight,flat_shape_weight)); 
+
+
+                SMS::Curvature_flat_cost_p<cgal::polyhedron_surface_mesh> 
+                cost_flat(analytics, SMS::LindstromTurk_params(flat_volume_weight,flat_boundary_weight,flat_shape_weight)); 
+
+                SMS::Curvature_flat_stop<cgal::polyhedron_surface_mesh> stop_flat(flat_el(), analytics);
+
+                start = std::chrono::high_resolution_clock::now();
+
+                removed_edges_this_step = smart_edge_collapse(my_mesh, stop_flat, cost_flat, placement_flat);
+
+                finish = std::chrono::high_resolution_clock::now();
+
+                info(1) << "removed flat edges:" << removed_edges_this_step << std::endl;
+                info(1) << "runtime flat edges: " << std::chrono::duration_cast<std::chrono::microseconds>(finish-start).count() << " mus" << std::endl;
+
+                total_runtime = total_runtime + std::chrono::duration_cast<std::chrono::microseconds>(finish-start).count();
+
+
+                analytics.calculate_metrics();
+
+
+                info(1) << "flat edeges:" << analytics.get_num_flat_edges() << std::endl;
+
+                removed_edges += removed_edges_this_step;
+
+
+
+                //------------------------------- Step 2 curved area------------------------------
+
+                viennagrid_numeric curve_volume_weight = 0.4;
+                viennagrid_numeric curve_boundary_weight = 0.3;
+                viennagrid_numeric curve_shape_weight = 0.3;
+
+                SMS::LindstromTurk_placement<cgal::polyhedron_surface_mesh> 
+                    lt_placement(SMS::LindstromTurk_params(curve_volume_weight,curve_boundary_weight,curve_shape_weight));
+//Curvature_curved_cost
+                SMS::Curvature_cost<cgal::polyhedron_surface_mesh> 
+                    cost_curved(analytics, SMS::LindstromTurk_params(curve_volume_weight,curve_boundary_weight,curve_shape_weight));
+//Curvature_cost
+                SMS::Curvature_curved_stop<cgal::polyhedron_surface_mesh> stop_curved(ratio_of_edges, analytics);
+
+                start = std::chrono::high_resolution_clock::now();
+
+
+
+               removed_edges_this_step = smart_edge_collapse(my_mesh, /*stop*/ stop_curved, cost_curved, lt_placement /*placement_curved*/);
+
+                finish = std::chrono::high_resolution_clock::now();
+
+                info(1) << "removed curved edges:" << removed_edges_this_step << std::endl;
+                info(1) << "runtime curved edges: " << std::chrono::duration_cast<std::chrono::microseconds>(finish-start).count() << " mus" << std::endl;
+
+                total_runtime = total_runtime + std::chrono::duration_cast<std::chrono::microseconds>(finish-start).count();
+
+                
+                
+               
+                removed_edges += removed_edges_this_step;
+
+
+ 
+
+
+
+
 
             } else if(policy() == "mN1"){
 
@@ -379,6 +515,8 @@ info(1) << "AVERAGE EDGE LENGHT CURVED:" << analytics.average_length_curved_edge
                 info(1) << "removed flat edges:" << removed_edges_this_step << std::endl;
                 info(1) << "runtime flat edges: " << std::chrono::duration_cast<std::chrono::microseconds>(finish-start).count() << " mus" << std::endl;
 
+
+                total_runtime = total_runtime + std::chrono::duration_cast<std::chrono::microseconds>(finish-start).count();
                 //reduce counter of flat edges
                 //analytics.reduce_flat_edges(removed_edges_this_step);
 
@@ -418,7 +556,8 @@ info(1) << "AVERAGE EDGE LENGHT CURVED:" << analytics.average_length_curved_edge
 
                 info(1) << "removed transition edges:" << removed_edges_this_step << std::endl;
                 info(1) << "runtime transition edges: " << std::chrono::duration_cast<std::chrono::microseconds>(finish-start).count() << " mus" << std::endl; 
-
+                
+                total_runtime = total_runtime + std::chrono::duration_cast<std::chrono::microseconds>(finish-start).count();
 
 #pragma endregion
             } else if(policy() == "mN2"){
@@ -459,7 +598,11 @@ info(1) << "AVERAGE EDGE LENGHT CURVED:" << analytics.average_length_curved_edge
             info(1) << "--------------------------------------------------------------------------------" << std::endl;
 */
 
-            info(1) << "overall removed edges:" << removed_edges << std::endl;
+            info(1) << "overall removed edges: " << removed_edges << std::endl;
+
+            info(1) << "overall runtime: " << total_runtime <<  " mus" << std::endl;
+
+
 
 
             //___________________________________Testing_writing data into VTU file________________________________________________

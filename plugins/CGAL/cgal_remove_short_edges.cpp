@@ -126,7 +126,7 @@ namespace viennamesh
             std::sort(length.begin(), length.end());
 
 
-            for(int i =0; i < 10; i++){
+            for(int i =0; i <50; i++){
                 info(5)<< length[i]  << std::endl;
             }
 

@@ -49,7 +49,10 @@ namespace viennamesh
             int _flat_edges=0;
             int _feature_edges=0;
 
-            double _flat_boundary = 0.1;
+            //0.2 macht gute ergebnisse
+            double _flat_boundary = 0.13;
+
+
 
             double _feature_mean_boundary = 8.0;
 
@@ -86,6 +89,7 @@ namespace viennamesh
 
                 test_fill();
 
+                //TODO weg für performance
                 calculate_metrics();
 
                 calculate_transition_areas();
@@ -99,7 +103,8 @@ namespace viennamesh
 
                     std::cout << "Point: " << v.second->point() << std::endl;
 
-                }*/
+                }
+                */
                 
                 //create_traces();
 
@@ -140,7 +145,11 @@ namespace viennamesh
 
                 std::list<Vertex_handle> transition_area_fill;
 
-                int transition_zone_size = 10;
+                std::unordered_map<Vertex_handle, double> transition_distance;
+
+                int transition_zone_size = 20;
+
+                double transition_distance_max = 0.22;
 
                 for(cgal::polyhedron_surface_mesh::Halfedge_iterator at = _mesh.halfedges_begin(), end = _mesh.halfedges_end(); at !=end; ++at){
 
@@ -151,10 +160,14 @@ namespace viennamesh
                             _transition_area[at->vertex()] = 10;
                             transition_area.push_back(at->vertex());
                             transition_area_fill.push_back(at->vertex());
+
+                            transition_distance[at->vertex()]=0.0;
                         }else{
                             _transition_area[at->opposite()->vertex()] = 10;
                             transition_area.push_back(at->opposite()->vertex());
                             transition_area_fill.push_back(at->vertex());
+
+                            transition_distance[at->vertex()]=0.0;
                         }
                     }
                 }
@@ -167,7 +180,7 @@ namespace viennamesh
                     Vertex_handle v = transition_area.front();
 
 
-                    if(_transition_area[v] == (10 + transition_zone_size)){
+                    if(_transition_area[v] == (10 + transition_zone_size) || transition_distance[v] >= transition_distance_max){
                         //std::cout << "blub " << std::endl;
                         transition_area.pop_front();
                         continue;
@@ -182,6 +195,20 @@ namespace viennamesh
                             //std::cout << "blub " << std::endl;
                             transition_area.push_back(begin_h->opposite()->vertex());
                             _transition_area[begin_h->opposite()->vertex()] = _transition_area[begin_h->vertex()]+1;
+
+
+                            double new_distance = std::sqrt(CGAL::squared_distance(begin_h->opposite()->vertex()->point(), begin_h->vertex()->point()));
+
+                            if(transition_distance.find(begin_h->opposite()->vertex()) != transition_distance.end()){
+
+                                if(transition_distance[begin_h->opposite()->vertex()] < transition_distance[begin_h->vertex()] + new_distance){
+                                    transition_distance[begin_h->opposite()->vertex()] = 
+                                        transition_distance[begin_h->vertex()] + new_distance;
+                                }
+                            } else {
+                                transition_distance[begin_h->opposite()->vertex()] = 
+                                    transition_distance[begin_h->vertex()] + new_distance;
+                            }
                         }
             
                         begin_h++;
@@ -232,7 +259,7 @@ namespace viennamesh
                     
                     if(_features.find(at) == _features.end()){
 
-                        fill_area_del_transition(14, at);
+                        //fill_area_del_transition(14, at);
                         
                     }
                 }
@@ -244,12 +271,24 @@ namespace viennamesh
 
                 int total_number=0;
 
+                double min_length=10000000.0;
+                double max_length=0.0;
+
                 _curved_edges=0;
                 _flat_edges=0;
                 _feature_edges=0;
 
 
                 for(cgal::polyhedron_surface_mesh::Halfedge_iterator at = _mesh.halfedges_begin(), end = _mesh.halfedges_end(); at !=end; ++at){
+                    
+                    double length = CGAL::squared_distance(at->vertex()->point(), at->opposite()->vertex()->point());
+                    if(length < min_length){
+                        min_length = length;
+                    }
+
+                    if(length > max_length){
+                        max_length = length;
+                    }
 
                     //calculate number of edges in each region
                     if(get_feature(at->vertex()) ==-1 && get_feature(at->opposite()->vertex()) == -1){
@@ -277,6 +316,10 @@ namespace viennamesh
                 std::cout << "feature: "<< _feature_edges << std::endl;
 
                 std::cout << "total number of edges: "<< total_number/2 << std::endl;
+
+                std::cout << "MAX length of edge: "<< std::sqrt(max_length) << std::endl;
+
+                std::cout << "MIN length of edge: "<< std::sqrt(min_length) << std::endl;
 
             }
 
@@ -307,6 +350,44 @@ namespace viennamesh
 
                 
                 //return (sum_length);
+
+            }
+
+            void extend_transition_area(){
+
+                int extension_val = 30;
+
+
+                for(cgal::polyhedron_surface_mesh::Halfedge_iterator at = _mesh.halfedges_begin(), end = _mesh.halfedges_end(); at !=end; ++at){
+
+                    if(get_transition_area(at->vertex()) !=-1 && get_transition_area(at->opposite()->vertex()) != -1){
+                        continue;
+                    }
+                    
+                    
+                    //calculate number of edges in each region
+                    if((get_transition_area(at->vertex()) !=-1 || get_transition_area(at->opposite()->vertex()) != -1) &&
+                     (get_feature(at->vertex()) ==-1 || get_feature(at->opposite()->vertex()) == -1)){
+
+                         if((get_transition_area(at->vertex()) != extension_val && get_transition_area(at->opposite()->vertex()) != extension_val)){
+
+                            if(get_transition_area(at->vertex()) ==-1){
+                                set_transition_area(at->vertex(), extension_val);
+                            }else{
+                                set_transition_area(at->opposite()->vertex(), extension_val);
+                            }
+
+
+
+                         }
+  
+
+
+                    }
+
+
+                }
+
 
             }
 

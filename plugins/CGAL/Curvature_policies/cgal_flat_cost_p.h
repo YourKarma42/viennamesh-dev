@@ -15,7 +15,7 @@
 #include <CGAL/Surface_mesh_simplification/Policies/Edge_collapse/Edge_profile.h>
 
 //analytics
-#include "../../analizing/cgal_mesh_analytics.hpp"
+#include "../analizing/cgal_mesh_analytics.hpp"
 
 
 
@@ -26,7 +26,7 @@ namespace Surface_mesh_simplification
 
 
 template<class ECM_>
-class Curvature_flat_cost
+class Curvature_flat_cost_p
 {
   
 public:
@@ -49,7 +49,7 @@ public:
 
  int b;
 
-  Curvature_flat_cost(viennamesh::cgal::cgal_mesh_analytics<ECM>  & a, LindstromTurk_params const& aParams = LindstromTurk_params()) 
+  Curvature_flat_cost_p(viennamesh::cgal::cgal_mesh_analytics<ECM>  & a, LindstromTurk_params const& aParams = LindstromTurk_params()) 
   : analytics(a) , mParams(aParams) {}
 
 
@@ -88,8 +88,8 @@ public:
     }*/
 
     //if(c1 < flat_boundary && c2 < flat_boundary){
-    if((analytics.get_feature(aProfile.v0()) == -1) && (analytics.get_feature(aProfile.v1()) == -1)
-        && (analytics.get_transition_area(aProfile.v0()) == -1) && (analytics.get_transition_area(aProfile.v1()) == -1)){
+    if((analytics.get_feature(aProfile.v0()) == -1) && (analytics.get_feature(aProfile.v1()) == -1))
+        {
        //std::cout << CGAL::squared_distance(aProfile.p0(), aProfile.p1()) << std::endl;
         return LindstromTurkCore<ECM,Profile>(mParams,aProfile).compute_cost(aPlacement);
         //return CGAL::squared_distance(aProfile.p0(), aProfile.p1());
