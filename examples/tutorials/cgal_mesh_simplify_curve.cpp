@@ -29,7 +29,7 @@ int main(int argc, char **argv)
 
     if (argc > 3){
         std::string new_pol(argv[3]);
-        if(new_pol == "m" || new_pol == "lt" || new_pol == "p" || new_pol == "mN1" || new_pol == "mN2"){
+        if(new_pol == "m" || new_pol == "lt" || new_pol == "p" || new_pol == "mN1" || new_pol == "mN2" || new_pol == "mC1" || new_pol == "fcp"){
             policy = new_pol;
         }else{
             std::cout << "Wrong argument in 3: must be lt or m or p" << std::endl;
@@ -81,7 +81,9 @@ int main(int argc, char **argv)
 
     test.run();
 
-    std::string file_name = std::string(basename(argv[1]));
+//komisch nochmal überlegen
+    std::string file_name = std::string(basename(argv[1])).substr(0,std::string(basename(argv[1])).find_last_of("/"));
+
 
 
     //the resulting coarsened mesh is written to a vtu file.
