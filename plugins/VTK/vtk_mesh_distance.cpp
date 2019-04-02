@@ -45,10 +45,11 @@ namespace viennamesh {
             //std::string a = meshPath1();
 
             std::string filename = meshPath1();
-            std::string BaseOutputPath = meshPath2().substr(0,meshPath2().find_last_of("/"));
+            //std::string BaseOutputPath = meshPath2().substr(0,meshPath2().find_last_of("/"));
+            std::string BaseOutputPath = "";
         
             //store all quality values in a vector
-            std::vector<std::vector<double>> qualities;
+            std::vector<double> qualities;
             std::vector<double> tmp_data;
             
             //create output csv-file for storing the mesh quality data
@@ -146,14 +147,14 @@ namespace viennamesh {
             qualityArray->SetName("distance"); 
             reader1->GetOutput()->GetPointData()->AddArray(qualityArray);
 
-            tmp_data.resize(reader1->GetNumberOfCells());    
+            /*tmp_data.resize(reader1->GetNumberOfCells());    
             for (size_t i = 0; i < reader1->GetNumberOfCells(); ++i)
             {
                 tmp_data[i] = *qualityArray->GetTuple(i);
             }
 
             qualities.push_back(tmp_data);
-            tmp_data.clear();
+            tmp_data.clear();*/
 
 
             std::cout << (double)(distanceFilter->GetOutput()->GetNumberOfPoints()) << std::endl;
@@ -168,6 +169,8 @@ namespace viennamesh {
                sum_dist = sum_dist + vtkDoubleArray::SafeDownCast(distanceFilter->GetOutput()->GetPointData()->GetScalars())->GetValue(i);
                sum_dist_abs = sum_dist_abs + 
                         fabs(vtkDoubleArray::SafeDownCast(distanceFilter->GetOutput()->GetPointData()->GetScalars())->GetValue(i));
+
+                qualities.push_back(vtkDoubleArray::SafeDownCast(distanceFilter->GetOutput()->GetPointData()->GetScalars())->GetValue(i));
 
                //probably write data into file to make statistic
             }
@@ -202,15 +205,12 @@ namespace viennamesh {
 
            for(size_t vid = 0; vid < reader1->GetNumberOfCells(); ++vid)
             {
-                for (size_t mid = 0; mid < qualities.size(); ++mid)
-                {
-                    csv << qualities[mid][vid];
+                csv << qualities[vid];
 
-                    if (mid != (qualities.size()-1))
-                    {
-                        csv << ",";
-                    }
-                }
+
+                //csv << ",";
+                    
+        
                 csv << std::endl;
             }
 

@@ -38,11 +38,11 @@ namespace viennamesh {
             size_t found = (filename).find_last_of("/");
             size_t find_vtu = (filename).find_last_of(".");
 
-            std::string output_filename_csv = BaseOutputPath;
+            std::string output_filename_csv = "";
             output_filename_csv += filename.substr(found+1, find_vtu-found-1);;
             output_filename_csv += "_quality.csv";
 
-            std::string output_filename_vtu = BaseOutputPath;
+            std::string output_filename_vtu = "";
             output_filename_vtu += filename.substr(found+1, find_vtu-found-1);
             output_filename_vtu += "_quality.vtu";
 

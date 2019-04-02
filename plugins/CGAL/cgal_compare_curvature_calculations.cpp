@@ -37,6 +37,10 @@
 //hash table to store curvatures
 #include <unordered_map>
 
+#include <fstream>
+
+
+
 
 
 
@@ -57,6 +61,8 @@ namespace viennamesh
         bool cgal_compare_curvature_calculations::run(viennamesh::algorithm_handle &){
 
             data_handle<viennagrid_numeric> number_of_loops = get_input<viennagrid_numeric>("number_of_loops");
+
+            data_handle<viennagrid_numeric> number_of_points = get_input<viennagrid_numeric>("number_of_points");
 
             data_handle<bool> create_outputmesh = get_input<bool>("outputmesh");
  
@@ -112,12 +118,86 @@ namespace viennamesh
 
                 start = std::chrono::high_resolution_clock::now();
 
+            char cwd[PATH_MAX];
+            std::string output_filename_my = getcwd(cwd, sizeof(cwd));
+            std::string output_filename_cgal = getcwd(cwd, sizeof(cwd));
+            output_filename_my += "/distance.csv";
+            output_filename_cgal += "/times_cgal.csv";
+
+            std::ofstream csv_my, csv_cgal;
+            csv_my.open(output_filename_my.c_str(),  std::ios::app);
+
+            std::stringstream out1, out2, out3, out4, out5;
+
+            bool first = true;
+
+ 
+
                 for(cgal::polyhedron_surface_mesh::Vertex_iterator at=my_mesh.vertices_begin(),end=my_mesh.vertices_end();at!=end;++at)
                 {
+                    if(!first){
+                        out1 << ", ";
+                        out2 << ", ";
+                        out3 << ", ";
+                        out4 << ", "; 
+                        out5 << ", ";   
+                    }
 
-                    cgal::polyhedron_surface_mesh::Vertex_handle t = at;
-                    principal_curvatures_cgal_time_test(*at, my_mesh, curvatures);
+                    double test_c1[2];
+
+                    
+                    principal_curvatures_cgal_time_test(*at, my_mesh, test_c1, 6);
+
+                    /*double c = (test_c1[0]+test_c1[1])/2.0;
+                    
+                    out1 << std::to_string(c);
+
+                    
+                    principal_curvatures_cgal_time_test(*at, my_mesh, test_c1, 18);
+
+                    c = (test_c1[0]+test_c1[1])/2.0;
+                    
+                    out2 << std::to_string(c);
+
+                    
+                    principal_curvatures_cgal_time_test(*at, my_mesh, test_c1, 35);
+
+                    c = (test_c1[0]+test_c1[1])/2.0;
+                    
+                    out3 << std::to_string(c);
+
+                    
+                    principal_curvatures_cgal_time_test(*at, my_mesh, test_c1, 40);
+
+                    c = (test_c1[0]+test_c1[1])/2.0;
+                    
+                    out4 << std::to_string(c);
+
+                    Curves cu = calc_curvatures(*at);
+
+                    out5 << std::to_string(cu.mean);
+
+
+
+
+
+
+
+                    first = false;*/
+
                 }
+
+                csv_my << out1.str() << std::endl;
+
+                csv_my << out2.str() << std::endl;
+
+                csv_my << out3.str() << std::endl;
+
+                csv_my << out4.str() << std::endl;
+
+                csv_my << out5.str();
+
+                csv_my.close();
 
                 finish = std::chrono::high_resolution_clock::now();
 
@@ -130,6 +210,20 @@ namespace viennamesh
             info(1) << "number of loops:   " << number_of_loops()  << std::endl; 
             info(1) << "runtime my curvature:   " << summed_up_runtimes_my << " mus" << std::endl; 
             info(1) << "runtime cgal curvature " << summed_up_runtimes_cgal << " mus" << std::endl; 
+
+
+
+
+            /*std::ofstream csv_my, csv_cgal;
+            csv_my.open(output_filename_my.c_str(),  std::ios::app);
+            csv_cgal.open(output_filename_cgal.c_str(),  std::ios::app);
+
+            csv_my << summed_up_runtimes_my/(double)number_of_loops() << ", "; 
+            csv_cgal << summed_up_runtimes_cgal/(double)number_of_loops() << ", ";*/
+
+            //close csv file
+            //csv_my.close();
+            //csv_cgal.close();
 
 
 
@@ -242,7 +336,7 @@ namespace viennamesh
 
                             Curves c = calc_curvatures(*at);
 
-                            principal_curvatures_cgal_time_test(*at, my_mesh, curvatures);
+                            principal_curvatures_cgal_time_test(*at, my_mesh, curvatures,number_of_points());
 
 
                             viennagrid_quantity_field_value_set(quantity_field,id,&(c.p1));
@@ -257,7 +351,7 @@ namespace viennamesh
 
                             viennagrid_quantity_field_value_set(quantity_field5,id,&(curvatures[1]));
 
-                            double a = (double)((curvatures[0]+curvatures[0])/2.0);
+                            double a = (double)((curvatures[0]+curvatures[1])/2.0);
 
                             viennagrid_quantity_field_value_set(quantity_field6,id,&a);
 

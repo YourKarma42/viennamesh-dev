@@ -60,7 +60,7 @@ public:
     
     //return ( static_cast<double>(aCurrentCount) / static_cast<double>(aInitialCount) ) < mRatio ;
 
-    return CGAL::squared_distance(aProfile.p0(), aProfile.p1()) > mRatio;
+    return (aProfile.surface_mesh().size_of_vertices() <= mRatio);
 
 
   }

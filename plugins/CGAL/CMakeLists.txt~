@@ -34,4 +34,5 @@ VIENNAMESH_ADD_PLUGIN(cgal_module
 		      cgal_simplify_curve.cpp
 					cgal_remove_short_edges.cpp
 					cgal_compare_curvature_calculations.cpp
+					cgal_data_creator.cpp
 					)

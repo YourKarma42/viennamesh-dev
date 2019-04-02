@@ -50,5 +50,5 @@ VIENNAMESH_ADD_PLUGIN(cgal_module plugin.cpp
 					cgal_simplify_curve.cpp
 					#needs to be added for .hpp
 					curvature_calculator.cpp
-
+					cgal_data_creator.cpp
 					)

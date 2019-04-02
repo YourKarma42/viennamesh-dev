@@ -88,7 +88,8 @@ namespace viennamesh
 
 //_____________________My Stuff____________________________________________________________________________________________________
 
-    //TODO: ANSCHAUN UND GENAU verstehen
+    bool _border;
+
     //gathers the closest points by collecting the neighbors and there neighbors and so on if nessesary
     std::vector<Point_3> closest_points(long amount, mesh_t::Vertex& vertex,mesh_t& mesh)
     {
@@ -118,6 +119,10 @@ namespace viennamesh
                       //std::cout << "now adding the vertex\n";
                       new_vertexes.push_back(* (at->opposite()->vertex()));
                   }
+
+                  if((at->is_border_edge() && at->opposite()->is_border_edge()) && (id == 0)){
+                      _border = true;
+                  }
               
                   ++at;
               }while(at!=end);
@@ -130,11 +135,10 @@ namespace viennamesh
 
 
 
-    Monge_form get_monge_form (mesh_t::Vertex& vertex ,mesh_t& mesh)
+    Monge_form get_monge_form (mesh_t::Vertex& vertex ,mesh_t& mesh, unsigned int needed)
     {
       unsigned int d_fitting = 2;
       unsigned int d_monge = 2;
-      unsigned int needed = 6;
       
       Vector_3  normal=get_surface_normal(vertex);
 
@@ -146,7 +150,7 @@ namespace viennamesh
       }
 
       CGAL::Monge_via_jet_fitting<Kernel> monge_fit;
-      //monge fit anschaun wirklich points?
+
       CGAL::Monge_via_jet_fitting<Kernel>::Monge_form monge_form 
               = monge_fit(points.begin(),points.end(),d_fitting, d_monge);
               
@@ -166,12 +170,21 @@ namespace viennamesh
         return true;
     }*/
 
-    bool principal_curvatures_cgal_time_test(mesh_t::Vertex& vertex, mesh_t& mesh, double  curvatures[]){
 
-        Monge_form monge_form=get_monge_form (vertex,mesh);
 
-        curvatures[0] = monge_form.principal_curvatures(0); // max
-        curvatures[1] = monge_form.principal_curvatures(1); // min
+    bool principal_curvatures_cgal_time_test(mesh_t::Vertex& vertex, mesh_t& mesh, double  curvatures[], unsigned int num_points){
+
+        _border = false;
+
+        Monge_form monge_form=get_monge_form (vertex,mesh, num_points);
+
+        if(_border == false){
+            curvatures[0] = monge_form.principal_curvatures(0); // max
+            curvatures[1] = monge_form.principal_curvatures(1); // min
+        }else{
+            curvatures[0] = 100;
+            curvatures[1] = 100;         
+        }
 
         return true;
 
@@ -231,7 +244,7 @@ namespace viennamesh
 
         auto start = std::chrono::high_resolution_clock::now();
 
-        Monge_form monge_form=get_monge_form (vertex,mesh);
+        Monge_form monge_form=get_monge_form (vertex,mesh, 6);
 
 
         curvatures[0] = monge_form.principal_curvatures(0); // max

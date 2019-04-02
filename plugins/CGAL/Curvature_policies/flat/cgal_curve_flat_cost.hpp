@@ -50,7 +50,7 @@ public:
  int b;
 
   Curvature_flat_cost(viennamesh::cgal::cgal_mesh_analytics<ECM>  & a, LindstromTurk_params const& aParams = LindstromTurk_params()) 
-  : analytics(a) , mParams(aParams) {}
+  :  analytics(a) , mParams(aParams) {}
 
 
   template <typename Profile, typename T> 
@@ -88,14 +88,14 @@ public:
     }*/
 
     //if(c1 < flat_boundary && c2 < flat_boundary){
-    if((analytics.get_feature(aProfile.v0()) == -1) && (analytics.get_feature(aProfile.v1()) == -1)
-        && (analytics.get_transition_area(aProfile.v0()) == -1) && (analytics.get_transition_area(aProfile.v1()) == -1)){
+    //if((analytics.get_feature(aProfile.v0()) == -1) && (analytics.get_feature(aProfile.v1()) == -1)
+    //    && (analytics.get_transition_area(aProfile.v0()) == -1) && (analytics.get_transition_area(aProfile.v1()) == -1)){
        //std::cout << CGAL::squared_distance(aProfile.p0(), aProfile.p1()) << std::endl;
+    if(analytics.get_transition_distance(aProfile.v0()) >= max_size && analytics.get_transition_distance(aProfile.v1()) >= max_size) {
         return LindstromTurkCore<ECM,Profile>(mParams,aProfile).compute_cost(aPlacement);
         //return CGAL::squared_distance(aProfile.p0(), aProfile.p1());
     }
-      
-
+    
 
     return result_type(100);
 
@@ -106,6 +106,8 @@ private:
     viennamesh::cgal::cgal_mesh_analytics<ECM>  & analytics;
 
     LindstromTurk_params mParams ; 
+
+    double max_size;
 
   
 };

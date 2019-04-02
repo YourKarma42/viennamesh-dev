@@ -74,6 +74,8 @@ namespace viennamesh
 
             std::unordered_map<Vertex_handle, int> _visited_area;
 
+            std::unordered_map<Vertex_handle, double> _transition_distance;
+
         
         public:
 
@@ -90,66 +92,28 @@ namespace viennamesh
                 test_fill();
 
                 //TODO weg für performance
-                calculate_metrics();
+                //calculate_metrics();
 
-                calculate_transition_areas();
+                //calculate_transition_areas();
 
                 //extract_features(); 
 
-                /*std::cout << "size: " << trace_startingpoints.size() << std::endl;
-*/
-
-                /*for(auto v: trace_startingpoints){
-
-                    std::cout << "Point: " << v.second->point() << std::endl;
-
-                }
-                */
-                
-                //create_traces();
-
-                double curved_verts = 0;
-
-                double sum_mean_curve = 0;
-
-                double sum_gauss_curve = 0;
-
-                for(cgal::polyhedron_surface_mesh::Vertex_iterator at=_mesh.vertices_begin(),end=_mesh.vertices_end();at!=end;++at)
-                {
-                    if(fabs(_curvatures[at].p1) > 0.0 || fabs(_curvatures[at].p2) > 0.0){
-
-                        sum_mean_curve = sum_mean_curve + _curvatures[at].mean;
-
-                        sum_gauss_curve = sum_gauss_curve + _curvatures[at].gauss;
-
-                        curved_verts++;
-
-                    }
-                    
-
-                }
-
-                std::cout << "avg mean curve: " << sum_mean_curve/curved_verts << std::endl;
-
-                std::cout << "avg gauss curve: " << sum_gauss_curve/curved_verts << std::endl;
-
-
-
+                std::cout << "SIZE OF FEATURE: " << _features.size() << std::endl;
 
            
             }
 
             bool calculate_transition_areas(){
 
+                _transition_area.clear();
+
                 std::list<Vertex_handle> transition_area;
 
-                std::list<Vertex_handle> transition_area_fill;
+                std::list<Vertex_handle> transition_area_fill;            
 
-                std::unordered_map<Vertex_handle, double> transition_distance;
+                int transition_zone_size = 100;
 
-                int transition_zone_size = 20;
-
-                double transition_distance_max = 0.22;
+                double transition_distance_max = 5;
 
                 for(cgal::polyhedron_surface_mesh::Halfedge_iterator at = _mesh.halfedges_begin(), end = _mesh.halfedges_end(); at !=end; ++at){
 
@@ -161,13 +125,13 @@ namespace viennamesh
                             transition_area.push_back(at->vertex());
                             transition_area_fill.push_back(at->vertex());
 
-                            transition_distance[at->vertex()]=0.0;
+                            _transition_distance[at->vertex()]=0.0;
                         }else{
                             _transition_area[at->opposite()->vertex()] = 10;
                             transition_area.push_back(at->opposite()->vertex());
                             transition_area_fill.push_back(at->vertex());
 
-                            transition_distance[at->vertex()]=0.0;
+                            _transition_distance[at->vertex()]=0.0;
                         }
                     }
                 }
@@ -180,7 +144,7 @@ namespace viennamesh
                     Vertex_handle v = transition_area.front();
 
 
-                    if(_transition_area[v] == (10 + transition_zone_size) || transition_distance[v] >= transition_distance_max){
+                    if(_transition_area[v] == (10 + transition_zone_size) || _transition_distance[v] >= transition_distance_max){
                         //std::cout << "blub " << std::endl;
                         transition_area.pop_front();
                         continue;
@@ -199,15 +163,15 @@ namespace viennamesh
 
                             double new_distance = std::sqrt(CGAL::squared_distance(begin_h->opposite()->vertex()->point(), begin_h->vertex()->point()));
 
-                            if(transition_distance.find(begin_h->opposite()->vertex()) != transition_distance.end()){
+                            if(_transition_distance.find(begin_h->opposite()->vertex()) != _transition_distance.end()){
 
-                                if(transition_distance[begin_h->opposite()->vertex()] < transition_distance[begin_h->vertex()] + new_distance){
-                                    transition_distance[begin_h->opposite()->vertex()] = 
-                                        transition_distance[begin_h->vertex()] + new_distance;
+                                if(_transition_distance[begin_h->opposite()->vertex()] < _transition_distance[begin_h->vertex()] + new_distance){
+                                    _transition_distance[begin_h->opposite()->vertex()] = 
+                                        _transition_distance[begin_h->vertex()] + new_distance;
                                 }
                             } else {
-                                transition_distance[begin_h->opposite()->vertex()] = 
-                                    transition_distance[begin_h->vertex()] + new_distance;
+                                _transition_distance[begin_h->opposite()->vertex()] = 
+                                    _transition_distance[begin_h->vertex()] + new_distance;
                             }
                         }
             
@@ -246,6 +210,7 @@ namespace viennamesh
 
                     if(recolor == true){
                         _transition_area.erase(v);
+                        _transition_distance.erase(v);
                         _features[v] = 10;
                     }
 
@@ -254,15 +219,15 @@ namespace viennamesh
 
                 }
 
-                for(cgal::polyhedron_surface_mesh::Vertex_iterator at=_mesh.vertices_begin(),end=_mesh.vertices_end();at!=end;++at)
+                /*for(cgal::polyhedron_surface_mesh::Vertex_iterator at=_mesh.vertices_begin(),end=_mesh.vertices_end();at!=end;++at)
                 {
                     
-                    if(_features.find(at) == _features.end()){
+                    if(get_feature(at) == -1 && get_transition_area(at) == -1){
 
-                        //fill_area_del_transition(14, at);
+                        //fill_area_transition(80, at);
                         
                     }
-                }
+                }*/
                 
 
             }
@@ -365,22 +330,22 @@ namespace viennamesh
                     }
                     
                     
-                    //calculate number of edges in each region
                     if((get_transition_area(at->vertex()) !=-1 || get_transition_area(at->opposite()->vertex()) != -1) &&
                      (get_feature(at->vertex()) ==-1 || get_feature(at->opposite()->vertex()) == -1)){
 
-                         if((get_transition_area(at->vertex()) != extension_val && get_transition_area(at->opposite()->vertex()) != extension_val)){
+                        //das if eventuell weg noch überlegen was ich damit mach!
+                        if(get_feature(at->vertex()) ==-1 && get_feature(at->opposite()->vertex()) == -1){
 
-                            if(get_transition_area(at->vertex()) ==-1){
-                                set_transition_area(at->vertex(), extension_val);
-                            }else{
-                                set_transition_area(at->opposite()->vertex(), extension_val);
+                            if((get_transition_area(at->vertex()) != extension_val && get_transition_area(at->opposite()->vertex()) != extension_val)){
+
+                                if(get_transition_area(at->vertex()) ==-1){
+                                    set_transition_area(at->vertex(), extension_val);
+                                }else{
+                                    set_transition_area(at->opposite()->vertex(), extension_val);
+                                }
+
                             }
-
-
-
-                         }
-  
+                        }
 
 
                     }
@@ -391,15 +356,15 @@ namespace viennamesh
 
             }
 
-            bool fill_area_del_transition(int max_size, Vertex_handle v){
+            bool fill_area_transition(int max_size, Vertex_handle v){
                 
                 //std::unordered_map<Vertex_handle, int> tmp_features = _features;
 
-                std::unordered_map<Vertex_handle, int> tmp_features;
+                std::unordered_map<Vertex_handle, int> tmp_transition;
 
                 int node_counter=1;
 
-                tmp_features[v] = 10;
+                tmp_transition[v] = 10;
 
                 std::list<Vertex_handle> que;
 
@@ -409,16 +374,16 @@ namespace viennamesh
 
                 while(node_counter <= max_size){
 
-                    tmp_features[v] = 10;
+                    tmp_transition[v] = 10;
 
                     Halfedge_around_vertex_circulator begin_h=v->vertex_begin(),end_h=begin_h;                    
 
                     do{
-                        if(tmp_features.find(begin_h->opposite()->vertex()) == tmp_features.end()
-                           && _features.find(begin_h->opposite()->vertex()) == _features.end()){
+                        if(tmp_transition.find(begin_h->opposite()->vertex()) == tmp_transition.end()
+                           && _transition_area.find(begin_h->opposite()->vertex()) == _transition_area.end()){
 
 
-                            tmp_features[begin_h->opposite()->vertex()] = 5;
+                            tmp_transition[begin_h->opposite()->vertex()] = 5;
 
                             que.push_back(begin_h->opposite()->vertex());
 
@@ -435,9 +400,12 @@ namespace viennamesh
 
                     //if no vertices are in the que we have found an area that is small enough to fill
                     if(que.empty() ){
-                        for(auto vert: to_color){
-                            _transition_area.erase(vert);
-                            _features[vert] = 10;
+                        for(auto vert: to_color){      
+
+
+                            _transition_area[vert] = 10;
+                            //machen
+                            _transition_distance[vert]=1;
                         }
                         return true;
                     }
@@ -529,6 +497,8 @@ namespace viennamesh
             }
 
             void new_extrect_features(){
+
+                _features.clear();
 
 
                 std::list<Vertex_handle> border_vertices;
@@ -1242,6 +1212,10 @@ namespace viennamesh
 
             void calculate_curvatures(){
 
+                _curvatures.clear();
+
+                std::list<int> sv;
+
                 for(cgal::polyhedron_surface_mesh::Vertex_iterator at=_mesh.vertices_begin(),end=_mesh.vertices_end();at!=end;++at)
                 {
                     /*double blub[2];
@@ -1250,7 +1224,44 @@ namespace viennamesh
                     Vertex_handle t = at;
                     //in curvature calculator
                     _curvatures[at] = calc_curvatures(*at);
+
+
+
+                    Halfedge_around_vertex_circulator at1=at->vertex_begin(), end1 = at1;
+                    int anz=0;
+                        do{     
+
+                            anz++;                       
+    
+                            at1++;
+                        }while(at1 != end1);
+
+                    sv.push_back(anz);
+
+
+
                 }
+
+            char cwd[PATH_MAX];
+            std::string output_filename_my = getcwd(cwd, sizeof(cwd));
+            output_filename_my += "/oneringneig.csv";
+
+            std::ofstream csv_my;
+            csv_my.open(output_filename_my.c_str(),  std::ios::app);
+
+            for(auto a: sv){
+                csv_my << a << ", "; 
+            }
+            
+
+
+            //close csv file
+            csv_my.close();
+
+
+
+
+
 
             }
 
@@ -1331,6 +1342,18 @@ namespace viennamesh
 
                 return -1;
             }
+
+
+            double get_transition_distance(Vertex_handle v){
+
+                if(_transition_distance.find(v) != _transition_distance.end()){
+                    return _transition_distance[v];
+                }
+
+                return -1;
+            }
+
+
 
             int get_feature(Vertex_handle v){
                 if(_features.find(v) != _features.end()){

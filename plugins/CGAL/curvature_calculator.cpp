@@ -122,9 +122,15 @@ namespace viennamesh
                 return edge_curvature;
             }
 
+                mean_curve_normal_op = mean_curve_normal_op +  
+                (cot((tri).alpha) + cot(pre.beta)) *tri.prev_v;
+                //std::cout << "bi" << std::endl;
 
-            mean_curve_normal_op = mean_curve_normal_op +  
-            (cot((tri).alpha) + cot(pre.beta)) *tri.prev_v;
+        
+
+
+            //mean_curve_normal_op = mean_curve_normal_op +  
+            //(cot((tri).alpha) + cot(pre.beta)) *tri.prev_v;
 
             pre = tri;
         }
@@ -251,7 +257,7 @@ namespace viennamesh
         return out.str();
     }
 
-
+    //Calculates angles and sides of each triangle around a vertex in a COUNTER CLOCKWISE way (vertex iterator) see cgal doc
     std::list<Triangle> calc_triangle_angles_sides(Vertex& v){
 
 
@@ -267,7 +273,7 @@ namespace viennamesh
         vec1 = Vector_3(at->opposite()->vertex()->point(), v.point());
 
         ++at;
-        
+ 
         do
         {
             Vector_3 vec2 = Vector_3(prev->opposite()->vertex()->point(), at->opposite()->vertex()->point());
@@ -296,6 +302,8 @@ namespace viennamesh
 
             bool is_border = false;
 
+
+            //theoreticaly you could break here
             if(at->is_border_edge() && prev->is_border_edge())
                 is_border = true;
             
@@ -311,9 +319,9 @@ namespace viennamesh
             newTriangle.len_at_prev = norm2;
             newTriangle.len_at_v = norm3;
 
-            newTriangle.at_v = vec3;
+            newTriangle.at_v = vec3*(-1);
             newTriangle.at_prev = vec2;
-            newTriangle.prev_v = vec1;
+            newTriangle.prev_v = vec1*(-1);
 
             newTriangle.theta_border = is_border;
             
@@ -366,9 +374,9 @@ namespace viennamesh
         newTriangle.len_at_prev = norm2;
         newTriangle.len_at_v = norm3;
 
-        newTriangle.at_v = vec3;
+        newTriangle.at_v = vec3*(-1);
         newTriangle.at_prev = vec2;
-        newTriangle.prev_v = vec1;
+        newTriangle.prev_v = vec1*(-1);
 
         newTriangle.theta_border = is_border;
         
