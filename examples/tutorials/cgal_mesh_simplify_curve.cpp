@@ -136,7 +136,7 @@ int main(int argc, char **argv)
             output << "Zone mult: "<< zone_size_mult << std::endl;
 
             output << "Zone sizes:" << std::endl;
-            for(n: zones){
+            for(auto n: zones){
                 output << n << std::endl;
             }
         }
