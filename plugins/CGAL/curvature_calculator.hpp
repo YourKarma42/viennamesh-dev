@@ -11,6 +11,21 @@ namespace viennamesh
         typedef typename viennamesh::cgal::polyhedron_surface_mesh::Vertex Vertex;
         typedef typename viennamesh::cgal::polyhedron_surface_mesh::Vertex::Halfedge_around_vertex_circulator Halfedge_around_vertex_circulator;
 
+
+        /*
+		    v		
+		    /\
+	       /  \
+	      /    \
+	     /theta \
+	    /        \
+	   /          \
+	  /            \
+	 / alpha    beta\  
+	/________________\ 
+   at               prev
+*/
+
         struct Triangle{
             double alpha;
             double beta;
@@ -32,10 +47,14 @@ namespace viennamesh
             double mean;
             double p1;
             double p2;
+            double area;
+            Vector_3 normal;
         };
 
 
         double const edge_curvature = 100.0;
+
+
 
 
 
@@ -52,7 +71,7 @@ namespace viennamesh
         double mixed_area(std::list<Triangle> &triangles);
 
 
-        double mean_curvature(std::list<Triangle> &triangles,  double area  );
+        double mean_curvature(std::list<Triangle> &triangles,  double area, Vector_3& normal);
 
         double gauss_curvature(std::list<Triangle> &triangles, double area );
 

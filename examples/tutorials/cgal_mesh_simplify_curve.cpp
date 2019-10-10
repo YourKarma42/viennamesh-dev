@@ -33,7 +33,7 @@ int main(int argc, char **argv)
 
     if (argc > 3){
         std::string new_pol(argv[3]);
-        if(new_pol == "m" || new_pol == "lt" || new_pol == "p" || new_pol == "mN1" || new_pol == "mN2" || new_pol == "mC1" || new_pol == "fcp"){
+        if(new_pol == "m" || new_pol == "lt" || new_pol == "p"){
             policy = new_pol;
         }else{
             std::cout << "Wrong argument in 3: must be lt or m or p" << std::endl;
@@ -61,12 +61,7 @@ int main(int argc, char **argv)
 
     }
 
-    /*if (argc > 6)
-    {
-        std::cout << "4 optional parameters: ratio as double | lindstom turk (lt) or my stuff (m)" << std::endl;
-        std::cout << "transition area edge length as double | flat area edge length as double" << std::endl;
-        return 0;
-    }*/
+
 
 
 

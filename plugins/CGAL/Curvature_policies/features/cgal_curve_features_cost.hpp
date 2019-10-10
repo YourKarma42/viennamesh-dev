@@ -75,28 +75,10 @@ public:
     int area_v1 = analytics.get_transition_area(aProfile.v1());
 
 
-//return CGAL::squared_distance(aProfile.p0(), aProfile.p1());
-
-
-
-   /* if((area_v0 != -1 && area_v1 != -1))
-
-    {
-        //if(area_v0 < area_max && area_v1 < area_max){
-
-          //if(analytics.get_transition_distance(aProfile.v0()) >= min_size && analytics.get_transition_distance(aProfile.v1()) >= min_size) 
-            return LindstromTurkCore<ECM,Profile>(mParams,aProfile).compute_cost(aPlacement);
-       // }
-
-    }*/
-
-    //if(analytics.get_feature(aProfile.v0()) == -1 && analytics.get_feature(aProfile.v1()) == -1) 
-    //    return LindstromTurkCore<ECM,Profile>(mParams,aProfile).compute_cost(aPlacement);
 
 
     if(analytics.get_transition_distance(aProfile.v0()) >= max_size && analytics.get_transition_distance(aProfile.v1()) >= max_size) {
       return LindstromTurkCore<ECM,Profile>(mParams,aProfile).compute_cost(aPlacement);
-      //return CGAL::squared_distance(aProfile.p0(), aProfile.p1());
     }
 
  

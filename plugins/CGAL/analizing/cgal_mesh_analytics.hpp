@@ -49,10 +49,7 @@ namespace viennamesh
             int _flat_edges=0;
             int _feature_edges=0;
 
-            //0.2 macht gute ergebnisse
             double _flat_boundary = 0.13;
-
-
 
             double _feature_mean_boundary = 8.0;
 
@@ -91,16 +88,24 @@ namespace viennamesh
 
                 test_fill();
 
-                //TODO weg für performance
+                //print test metrics
                 //calculate_metrics();
 
-                //calculate_transition_areas();
-
-                //extract_features(); 
-
-                std::cout << "SIZE OF FEATURE: " << _features.size() << std::endl;
-
+                calculate_transition_areas();
            
+            }
+
+            void recalculate(){
+
+                calculate_curvatures();
+                
+                new_extrect_features(); 
+
+                test_fill();
+
+
+                calculate_transition_areas();
+
             }
 
             bool calculate_transition_areas(){
@@ -218,17 +223,6 @@ namespace viennamesh
 
 
                 }
-
-                /*for(cgal::polyhedron_surface_mesh::Vertex_iterator at=_mesh.vertices_begin(),end=_mesh.vertices_end();at!=end;++at)
-                {
-                    
-                    if(get_feature(at) == -1 && get_transition_area(at) == -1){
-
-                        //fill_area_transition(80, at);
-                        
-                    }
-                }*/
-                
 
             }
 
@@ -576,620 +570,6 @@ namespace viennamesh
 
             }
 
-            void clean_curved_area(){
-
-                //dont iterate over all vertices save veature vertices in a map
-
-                for(cgal::polyhedron_surface_mesh::Vertex_iterator at=_mesh.vertices_begin(),end=_mesh.vertices_end();at!=end;++at)
-                {
-                    if(get_feature != -1){
-                        Halfedge_around_vertex_circulator begin_h=at->vertex_begin(),end_h=begin_h;
-                        do{
-
-
-                            begin_h++;
-                        }while(begin_h != end_h);
-                    }
-
-
-                }
-
-                //umgebung aller features betrachten abhängig vom Grad des vertex entscheiden ob es sich wirklich um ein feature handelt
-
-            }
-
-            void clean_features(){
-
-                //überlegen wie man features verbinden kann
-
-            }
-
-
-            void extract_features(){
-                int i=0;
-                for(cgal::polyhedron_surface_mesh::Halfedge_iterator at = _mesh.halfedges_begin(), end = _mesh.halfedges_end(); at !=end; ++at){
-
-
-                    // boundary edge
-                    if( _curvatures[at->vertex()].mean > _flat_boundary && _curvatures[at->opposite()->vertex()].mean > _flat_boundary){
-
-                        //check if we have an important feature
-
-                        if(_curvatures[at->vertex()].p2 < 0.01 && _curvatures[at->opposite()->vertex()].p2 < 0.01){
-
-
-
-                                                    
-                            Facet_handle facet = at->face();
-                            Facet_handle facet2 = at->opposite()->face();
-
-                            double angle=0;
-
-                            //check if edge is part of the border
-
-                            if(facet != 0 && facet2 != 0){
-
-                            
-                                Vector_3 face_normal = CGAL::normal(facet->facet_begin()->vertex()->point(),
-                                    facet->facet_begin()->next()->vertex()->point(),
-                                    facet->facet_begin()->opposite()->vertex()->point());
-
-
-                                Vector_3 face_normal2 = CGAL::normal(facet2->facet_begin()->vertex()->point(),
-                                    facet2->facet_begin()->next()->vertex()->point(),
-                                    facet2->facet_begin()->opposite()->vertex()->point());
-
-                                double skp = (face_normal*(1/std::sqrt(face_normal.squared_length())))*
-                                                        (face_normal2*(1/std::sqrt(face_normal2.squared_length())));
-                                
-                                //had rounding errors in some Meshes
-                                if (skp > 1.0) skp = 1.0;
-
-                                angle = acos(skp);
-                                
-                            }else{
-
-                                angle = 1.5707;
-                                
-                            }
-
-
-                            //check if edge intersects the mesh
-                            if(angle < 0.001){
-                                //std::cout << "angle: " << angle << std::endl;
-
-                                if(facet != 0 && facet2 != 0){
-
-                                    Vertex_handle v1, v2;
-
-                                    
-
-                                    Halfedge_around_facet_circulator begin =facet->facet_begin(), f_end = begin; 
-                                    
-                                    do{
-                                        if(begin->vertex() != at->vertex() && begin->vertex() != at->opposite()->vertex()){
-                                            v1 = begin->vertex();
-                                            break;
-                                        }
-                                        begin++;
-                                    }while(begin != f_end);
-
-                                    begin =facet2->facet_begin(), f_end = begin; 
-
-                                    do{
-
-                                        if(begin->vertex() != at->vertex() && begin->vertex() != at->opposite()->vertex()){
-                                            v2 = begin->vertex();
-                                            break;
-                                        }
-                                        begin++;
-                                    }while(begin != f_end);
-
-                                    //check if the edge is in the middle of the mesh (not part of a border)
-                                    if(_curvatures[v1].mean > _flat_boundary && _curvatures[v2].mean > _flat_boundary ){
-
-                                        //nicht color 3 Color 4 (fürs testen 3)
-
-                                        _features[at->vertex()] = 35;
-
-                                        _features[at->opposite()->vertex()] = 35;
-
-                                        _transition_area[at->vertex()]=3;
-
-                                        _transition_area[at->opposite()->vertex()]=3;
-
-                                        //_transition_area[at->vertex()]=0;
-
-                                        //_transition_area[at->opposite()->vertex()]=0;
-
-                                    }else{
-                                        
-                                        //only color if it isnt colored jet
-                                        if(_transition_area.find(at->vertex()) == _transition_area.end() && _transition_area.find(at->opposite()->vertex()) == _transition_area.end()){
-
-                                            _features[at->vertex()] = 10;
-
-                                            _features[at->opposite()->vertex()] = 10;
-
-                                            _transition_area[at->vertex()]=3;
-
-                                            _transition_area[at->opposite()->vertex()]=3;
-
-                                            //_transition_area[at->vertex()]=0;
-
-                                            //_transition_area[at->opposite()->vertex()]=0;
-                                        }
-
-                                    }
-
-
-
-
-                                }else{
-
-                                    //only color if it isnt colored jet
-                                    if(_transition_area.find(at->vertex()) == _transition_area.end() && _transition_area.find(at->opposite()->vertex()) == _transition_area.end()){
-
-                                        _features[at->vertex()] = 10;
-
-                                        _features[at->opposite()->vertex()] = 10;
-
-                                        _transition_area[at->vertex()]=3;
-
-                                        _transition_area[at->opposite()->vertex()]=3;
-                                    }
-                                }
-
-                                
-                            }
-
-
-
-                            //check if one Vertex is already colored
-                            //if(!((colors.find(at->vertex()) != colors.end()) && (colors.find(at->opposite()->vertex()) != colors.end() ))){
-                            //if(colors.find(at->vertex()) == colors.end() && colors.find(at->opposite()->vertex()) == colors.end()){ 
-                                
-                                //std::cout << << std::endl;        
-
-                            if(_transition_area.find(at->vertex()) == _transition_area.end()){
-                                _transition_area[at->vertex()]=1;
-                                _features[at->vertex()] = 25;
-                               // std::cout << at->vertex()->point() << "   " << at->opposite()->vertex()->point() << std::endl; 
-                                //std::cout << angle << std::endl;  
-                            }
-
-                            if(_transition_area.find(at->opposite()->vertex()) == _transition_area.end()){
-                                _features[at->opposite()->vertex()] = 25;
-                                _transition_area[at->opposite()->vertex()]=1;
-                                //std::cout << at->vertex()->point() << "   " << at->opposite()->vertex()->point() << std::endl; 
-                                //std::cout << angle << std::endl;
-                            }
-
-                            //std::cout << std::endl;
-                                
-                           // }
-
-                        } else{
-
-                            //check wich vertex of the edge is not flat
-
-                            //eventuell umdenken eventuell zuviele reinholen und dann später raushauen
-                            if(_curvatures[at->vertex()].p2 > 0.001){
-
-                                _transition_area[at->vertex()]=0;
-
-                                _features[at->vertex()] = 1;
-
-                                if (_trace_startingpoints.find(at->vertex()) == _trace_startingpoints.end())
-                                    _trace_startingpoints[at->vertex()]=at->vertex();
-
-                                
-                            }else{
-                                _transition_area[at->opposite()->vertex()]=0;
-
-                                _features[at->opposite()->vertex()] = 1;
-
-                                if (_trace_startingpoints.find(at->opposite()->vertex()) == _trace_startingpoints.end())
-                                    _trace_startingpoints[at->opposite()->vertex()]=at->opposite()->vertex();
-                                }
-
-
-                                
-                            }
-
-                            bool flat_1=true, flat_2 = true;
-                            
-                            //check the curvatures of each vertex around the the edge
-                            Halfedge_around_vertex_circulator v1=at->vertex()->vertex_begin(), v1_end = v1;
-                            do{      
-                                
-                                if(_curvatures[v1->opposite()->vertex()].mean < _flat_boundary){
-                                    flat_1=false;
-                                    break;                              
-                                }
-                                v1++;
-                            }while(v1 != v1_end);
-
-                            Halfedge_around_vertex_circulator v2=at->opposite()->vertex()->vertex_begin(), v2_end = v2;
-                            do{      
-                                
-                                if(_curvatures[v2->opposite()->vertex()].mean < _flat_boundary){
-                                    flat_2=false;
-                                    break;                              
-                                }
-                                v2++;
-                            }while(v2 != v2_end);
-
-                            if(flat_1){
-                                _curved_area[at->vertex()] = 50;                           
-                            }
-
-                            if(flat_2){
-                                _curved_area[at->opposite()->vertex()] = 50;
-                            }
-
-
-                       i++;
-                   }
-                }
-            }
-            
-            void create_traces(){
-                std::vector<std::vector<Vertex_handle>> traces;
-
-
-                for(auto start: _trace_startingpoints){
-                    
-                    Vertex_handle v = start.second;
-                    
-                    Vertex_handle prev = start.second;
-
-                    std::vector<Vertex_handle> vertices;
-
-                    std::vector<Halfedge_handle> he;
-
-
-                    Halfedge_around_vertex_circulator at=v->vertex_begin(), end = at;
-                    do{
-                        if(_transition_area.find(at->opposite()->vertex()) != _transition_area.end())                                                
-                            he.push_back(at);
-                        
-                        at++;
-                    }while(at != end);
-
-                    //std::cout << "start: " << v->point() << std::endl;
-
-                    //std::cout << "size: " << he.size() << std::endl;
-
-                    for(auto he_n: he){
-
-
-                        //std::cout << "  point: " << v1->point() << std::endl;
-
-                        traces.push_back(get_trace(he_n->opposite()->vertex(), prev));
-
-                        //traces.push_back(get_trace_test(v1, prev));
-
-                        //std::cout <<  std::endl;
-
-                    }
-
-                                               
-                        //std::cout << "colors " << colors[at->opposite()->vertex()] << std::endl;
-
-                }
-                    
-                _transition_area.clear();
-
-                int next = 1;
-
-                int col_output = 50;
-
-                for(auto t: traces){
-
-                    //std::cout << "size: " << t.size() << std::endl;
-
-                    int i = 1;
-                   
-                    int color = (next*2)-1;
-
-                    //col_output = 50;
-
-                    
-
-                    for(auto v: t){
-                        //curvatures[v].gauss = col_output;
-                        //col_output += 10;
-                       // std::cout << "point: " << v->point() << std::endl;
-
-                        //std::cout << " color " << color << std::endl;
-
-                        //std::cout << " i " << i << "   color " << color << std::endl;
-
-                        _transition_area[v] = color;
-
-                        //curvatures[v].gauss = col_output;
-
-                        if(i == 10){
-                            if(color == ((next*2)-1)){
-                                col_output = 100;
-                                color++;
-                                i=0;
-
-                            }else{
-                                col_output = 50;
-                                color--;
-                                i=0;
-                            }
-                        }
-
-                        i++;
-
-
-                    }
-                    //std::cout <<  std::endl;
-
-                    next++;
-
-                }
-            }
-
-            std::vector<Vertex_handle> get_trace(Vertex_handle v, Vertex_handle prev){
-
-                std::vector<Vertex_handle> vertices;
-
-                std::vector<Vertex_handle> current_trace;
-
-                std::vector<Halfedge_handle> he_around_v;
-
-                current_trace.push_back(v);
-
-                int i = 0;
-
-                    //find all colored neighbors
-
-                    do{
-                        vertices.clear();
-                        he_around_v.clear();
-
-                        //std::cout << "  v    " << v->point() << std::endl;
-                        //std::cout << "  prev " << prev->point() << std::endl;
-
-                        Halfedge_around_vertex_circulator at=v->vertex_begin(), end = at;
-                        do{                            
-                            if(_transition_area.find(at->opposite()->vertex()) != _transition_area.end()){
-                                //found previous vertex
-                                if(prev != at->opposite()->vertex()){
-
-                                    //found vertex that corsses the mesh
-                                    if(_transition_area[v] != 3 || _transition_area[at->opposite()->vertex()] != 3){
-                                        vertices.push_back(at->opposite()->vertex());
-                                        he_around_v.push_back(at);
-                                    }                                   
-                                }
-                            }
-                            at++;
-                        }while(at != end);
-
-                        if(fabs((*v).point().x() + 1.0) <= 0.00001 &&
-                            fabs((*v).point().y() - 0.5125 ) <= 0.00001 && /*1.275*/
-                            fabs((*v).point().z() + 1.3) <= 0.00001) {   
-
-                            std::cout << std::endl << std::endl;
-
-                                
-                            std::cout << "BLUB" << std::endl;
-
-                            //std::cout << he_around_v[0]->opposite()->vertex()->point() << std::endl;
-                            //std::cout << he_around_v[1]->opposite()->vertex()->point() << std::endl;
-
-                           // std::cout << _transition_area[he_around_v[0]->opposite()->vertex()] << std::endl;
-                            //std::cout << _transition_area[he_around_v[1]->opposite()->vertex()] << std::endl;
-
-                            /*for(auto vert: current_trace){
-                                std::cout << vert->point() << std::endl;
-                            }*/
-                            
-
-                            std::cout<< std::endl << std::endl;
-                  
-                        }   
-
-                        //std::cout << vertices.size() << std::endl;
-
-
-                        if(vertices.size() > 0){
-
-                            if(vertices.size() == 1){
-                                if(_transition_area[vertices[0]] != 0){
-
-                                    current_trace.push_back(vertices[0]);
-
-                                    prev = v;
-
-                                    _transition_area.erase(v);
-
-                                    v = vertices[0];
-
-                                }else {
-                                    //?
-                                    //current_trace.push_back(vertices[0]);
-                                    
-                                    _transition_area.erase(v);
-                                    return current_trace;
-
-                                }
-                            }else{
-
-                                //temporary fix for exp_conf
-
-                                if(vertices.size() == 2){
-                                    if(_transition_area[prev]==0){
-                                        if(_transition_area[he_around_v[0]->opposite()->vertex()] != 0){
-
-                                            current_trace.push_back(vertices[0]);
-
-                                            prev = v;
-
-                                            _transition_area.erase(v);
-
-                                            v = vertices[0];
-
-                                            continue;
-
-                                        }
-                                        if(_transition_area[he_around_v[1]->opposite()->vertex()] != 0){
-                                            current_trace.push_back(vertices[1]);
-
-                                            prev = v;
-
-                                            _transition_area.erase(v);
-
-                                            v = vertices[1];
-
-                                            continue;
-                                            
-                                        }
-                                    }
-
-                                }
-
-                               
-
-                                return current_trace;
-                                
-                            }
-
-                        }
-                    }while(vertices.size() > 0);
-
-                    
-
-
-                return current_trace;
-
-
-            }
-
-
-            std::vector<Vertex_handle> get_trace_test(Vertex_handle v, Vertex_handle prev){
-
-                std::vector<Vertex_handle> vertices;
-
-                std::vector<Vertex_handle> current_trace;
-
-                std::vector<Halfedge_handle> he_around_v;
-
-                current_trace.push_back(v);
-
-                int i = 0;
-
-                    //find all colored neighbors
-
-                    do{
-                        vertices.clear();
-                        he_around_v.clear();
-
-                        //std::cout << "  v    " << v->point() << std::endl;
-                        //std::cout << "  prev " << prev->point() << std::endl;
-
-                        Halfedge_around_vertex_circulator at=v->vertex_begin(), end = at;
-                        do{                            
-                            if(_transition_area.find(at->opposite()->vertex()) != _transition_area.end()){
-                                //found previous vertex
-                                if(prev != at->opposite()->vertex()){
-
-                                    //found vertex that corsses the mesh
-                                    if(_transition_area[v] != 3 || _transition_area[at->opposite()->vertex()] != 3){
-                                        vertices.push_back(at->opposite()->vertex());
-                                        he_around_v.push_back(at);
-                                    }                                   
-                                }
-                            }
-                            at++;
-                        }while(at != end);
-
-                        //std::cout << vertices.size() << std::endl;
-
-
-                        if(vertices.size() > 0){
-
-                            //std::cout << "start: ";
-
-                            if(vertices.size() > 1){
-
-                                std::cout << "start: " << v->point() << std::endl;                                   
-                                
-                                //std::cout << "at: " << v->point() << std::endl;
-
-                                for(auto he: he_around_v){
-                                    std::cout << he->opposite()->vertex()->point() << std::endl;
-
-                                    std::cout << _transition_area[he->opposite()->vertex()] << std::endl;
-
-                                    std::cout << _transition_area[he->opposite()->vertex()] << std::endl;
-                                    // eventuell direkt auf colors zugreifen
-                                    if(get_transition_area(he->next()->vertex()) == -1 || get_transition_area(he->opposite()->next()->vertex()) == -1 ){
-
-                                        if(_transition_area[he->opposite()->vertex()] != 0){
-
-                                            
-
-                                           /* std::cout << he->opposite()->vertex()->point() <<std::endl;
-                                           
-                                             std::cout << colors[he->next()->vertex()] << std::endl;
-
-                                             std::cout << colors[he->opposite()->next()->vertex()] << std::endl;*/
-
-                                            current_trace.push_back(he->opposite()->vertex());
-
-                                            prev = v;
-
-                                            _transition_area.erase(v);
-
-                                            v = he->opposite()->vertex();
-
-                                            i++;
-                                                                             
-
-                                            break;
-
-
-                                        }else {
-                                                //?
-                                                //current_trace.push_back(vertices[0]);
-                                                
-                                                _transition_area.erase(v);
-                                                return current_trace;
-                                        }
-                                    }
-
-                                }
-
-                                if(i>10){
-                                    
-                                    std::cout << std::endl;
-                                    return current_trace;
-                                }
-
-                                
-
-                            }
-
-                        }else{
-                            return current_trace;
-                        }
-                        
-                    }while(vertices.size() > 0);
-
-                    
-
-
-                return current_trace;
-
-
-            }
-
 
             //normalized facet normals
             void calculate_facet_normals(){
@@ -1212,7 +592,9 @@ namespace viennamesh
 
             void calculate_curvatures(){
 
-                _curvatures.clear();
+                //_curvatures.clear();
+
+                //TODO: reserve space for the vector
 
                 std::list<int> sv;
 
@@ -1224,10 +606,11 @@ namespace viennamesh
                     Vertex_handle t = at;
                     //in curvature calculator
                     _curvatures[at] = calc_curvatures(*at);
+                    //Curves test = calc_curvatures(*at);
 
 
 
-                    Halfedge_around_vertex_circulator at1=at->vertex_begin(), end1 = at1;
+                    /*Halfedge_around_vertex_circulator at1=at->vertex_begin(), end1 = at1;
                     int anz=0;
                         do{     
 
@@ -1236,32 +619,26 @@ namespace viennamesh
                             at1++;
                         }while(at1 != end1);
 
-                    sv.push_back(anz);
+                    sv.push_back(anz);*/
 
 
 
                 }
 
-            char cwd[PATH_MAX];
-            std::string output_filename_my = getcwd(cwd, sizeof(cwd));
-            output_filename_my += "/oneringneig.csv";
+                /*char cwd[PATH_MAX];
+                std::string output_filename_my = getcwd(cwd, sizeof(cwd));
+                output_filename_my += "/oneringneig.csv";
 
-            std::ofstream csv_my;
-            csv_my.open(output_filename_my.c_str(),  std::ios::app);
+                std::ofstream csv_my;
+                csv_my.open(output_filename_my.c_str(),  std::ios::app);
 
-            for(auto a: sv){
-                csv_my << a << ", "; 
-            }
+                for(auto a: sv){
+                    csv_my << a << ", "; 
+                }
             
 
-
-            //close csv file
-            csv_my.close();
-
-
-
-
-
+                //close csv file
+                csv_my.close();*/
 
             }
 
@@ -1314,6 +691,8 @@ namespace viennamesh
 
 
 
+
+
             bool has_curvature(Vertex_handle v){
                 return (_curvatures.find(v) != _curvatures.end());
             }
@@ -1330,9 +709,20 @@ namespace viennamesh
                 return _curvatures[v].p1;
             }
 
+
             double get_p2(Vertex_handle v){
                 return _curvatures[v].p2;
             }
+
+            Vector_3 get_normal_vec(Vertex_handle v){
+                return _curvatures[v].normal;
+            }
+
+            double get_area(Vertex_handle v){
+                return _curvatures[v].area;
+            }
+
+            
 
             int get_transition_area(Vertex_handle v){
 

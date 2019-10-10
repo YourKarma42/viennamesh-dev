@@ -47,20 +47,6 @@ public:
   optional<typename Profile::Point> operator()( Profile const& aProfile ) const
   {
 
-    int area_max = 20;
-
-    /*if(analytics.get_transition_area(aProfile.v0()) != -1 && analytics.get_transition_area(aProfile.v1()) != -1){
-
-      if (analytics.get_transition_area(aProfile.v0()) == area_max){
-
-        analytics.set_transition_area(aProfile.v1(), 20);
-
-      }else if(analytics.get_transition_area(aProfile.v1()) == area_max){
-        analytics.set_transition_area(aProfile.v0(), 20);
-
-      }
-    }*/
-
     return LindstromTurkCore<ECM,Profile>(mParams,aProfile).compute_placement() ;
   }
   

@@ -43,11 +43,8 @@ public:
   {
 
 
-    //subtract removed edges from number of edges counter
 
-    //analytics.reduce_flat_edges(aInitialCount - aCurrentCount);
-
-    //as long as edges arnt too long
+    //as long as edges arn't too long
     return  std::sqrt(CGAL::squared_distance(aProfile.p0(), aProfile.p1())) > m_edge_sq_length_threshold;
     
   }

@@ -43,10 +43,6 @@ public:
                     ) const 
     {
 
-
-        //if(aCurrentCost >= 100)
-        //    return true;
-
         if((analytics.get_feature(aProfile.v0()) != 30 && analytics.get_feature(aProfile.v1()) != 30)){
             return std::sqrt(CGAL::squared_distance(aProfile.p0(), aProfile.p1())) > mEdgeLength;
         }else{
@@ -55,7 +51,7 @@ public:
 
         
             
-        //return ( static_cast<double>(aCurrentCount) < (static_cast<double>(aInitialCount) - 6000.0));
+
     }
   
     private:

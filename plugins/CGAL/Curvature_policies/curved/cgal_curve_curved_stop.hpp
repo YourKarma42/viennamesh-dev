@@ -29,6 +29,7 @@ public:
   typedef ECM_ ECM ;
   
   typedef Edge_profile<ECM> Profile ;
+
   
   typedef typename boost::graph_traits<ECM>::edge_descriptor edge_descriptor ;
   typedef typename boost::graph_traits<ECM>::edges_size_type size_type ;
@@ -44,14 +45,14 @@ public:
                  , size_type         aCurrentCount
                  ) const 
   {
-      //ändern
-    int init_num_curved_edges = aInitialCount - analytics.get_num_flat_edges() - analytics.get_num_curved_edges();
+
+    //int init_num_curved_edges = aInitialCount - analytics.get_num_flat_edges() - analytics.get_num_curved_edges();
+
+
 
     return std::sqrt(CGAL::squared_distance(aProfile.p0(), aProfile.p1())) > m_curved_stop_ratio;
 
-    //as long as edges arnt too long
-    //return  ((static_cast<double>(aCurrentCount - analytics.get_num_flat_edges() - analytics.get_num_curved_edges()) / static_cast<double>(init_num_curved_edges) )< m_curved_stop_ratio);
-    
+
   }
   
 private:

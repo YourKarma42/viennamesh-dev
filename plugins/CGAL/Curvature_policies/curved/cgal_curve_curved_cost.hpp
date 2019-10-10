@@ -63,32 +63,7 @@ public:
   {
     typedef optional<typename Profile::FT> result_type;
 
-    bool coars_features = true;
 
-
-
-    // values only for testing
-
-    //std::cout<< analytics.get_mean(aProfile.v0()) << std::endl;
-
-    //viennamesh::cgal::Curves c1 = viennamesh::cgal::calc_curvatures(*aProfile.v0());
-    
-    //viennamesh::cgal::Curves c2 = viennamesh::cgal::calc_curvatures(*aProfile.v1());
-
-    //if(analytics.get_curved_area(aProfile.v0())!= -1 && analytics.get_curved_area(aProfile.v1())!= -1){
-    // for testing use feature
-   /* if((analytics.get_feature(aProfile.v0())!= -1 && analytics.get_feature(aProfile.v1())!= -1)){
-       //std::cout << LindstromTurkCore<ECM,Profile>(mParams,aProfile).compute_cost(aPlacement) << std::endl;
-        return LindstromTurkCore<ECM,Profile>(mParams,aProfile).compute_cost(aPlacement) ; 
-    }
-
-    if(coars_features){
-  
-      if((analytics.get_feature(aProfile.v0())!= -1 && analytics.get_transition_area(aProfile.v1())!= -1) ||
-      (analytics.get_feature(aProfile.v1())!= -1 && analytics.get_transition_area(aProfile.v0())!= -1)){
-        return LindstromTurkCore<ECM,Profile>(mParams,aProfile).compute_cost(aPlacement) ; 
-      }
-    }*/
 
     return LindstromTurkCore<ECM,Profile>(mParams,aProfile).compute_cost(aPlacement) ; 
 

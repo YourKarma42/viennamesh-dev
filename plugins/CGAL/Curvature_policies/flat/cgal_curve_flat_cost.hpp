@@ -66,34 +66,9 @@ public:
 
     double c2;
 
-    // values only for testing
-
-    //std::cout<< analytics.get_mean(aProfile.v0()) << std::endl;
-    
-/*
-    if(analytics.has_curvature(aProfile.v0())){
-        c1 = analytics.get_mean(aProfile.v0());
-        //std::cout<< "blubb" << std::endl;
-    }else{
-        c1=0;
-        std::cout<< "blubb" << std::endl;
-    }
-
-    if(analytics.has_curvature(aProfile.v1())){
-        c2 = analytics.get_mean(aProfile.v1());
-        //std::cout<< "blubb" << std::endl;
-    }else{
-        c2=0;
-        std::cout<< "blubb" << std::endl;
-    }*/
-
-    //if(c1 < flat_boundary && c2 < flat_boundary){
-    //if((analytics.get_feature(aProfile.v0()) == -1) && (analytics.get_feature(aProfile.v1()) == -1)
-    //    && (analytics.get_transition_area(aProfile.v0()) == -1) && (analytics.get_transition_area(aProfile.v1()) == -1)){
-       //std::cout << CGAL::squared_distance(aProfile.p0(), aProfile.p1()) << std::endl;
+  
     if(analytics.get_transition_distance(aProfile.v0()) >= max_size && analytics.get_transition_distance(aProfile.v1()) >= max_size) {
         return LindstromTurkCore<ECM,Profile>(mParams,aProfile).compute_cost(aPlacement);
-        //return CGAL::squared_distance(aProfile.p0(), aProfile.p1());
     }
     
 

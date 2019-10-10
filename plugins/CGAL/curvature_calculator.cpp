@@ -1,5 +1,9 @@
 #include "curvature_calculator.hpp"
 
+//Paper
+//Mark Meyer,MathieuDesbrun, Peter Schröoder, and Alan H. Barr
+//Discrete Differential-Geometry Operators for Triangulated 2-Manifolds 2003
+
 namespace viennamesh
 {
     namespace cgal
@@ -34,10 +38,12 @@ namespace viennamesh
         std::list<Triangle> one_ring_neightbors;
         one_ring_neightbors = calc_triangle_angles_sides(v);
 
+        Vector_3 normal;
+
 
         double area = mixed_area(one_ring_neightbors);
 
-        double mean = mean_curvature(one_ring_neightbors, area);
+        double mean = mean_curvature(one_ring_neightbors, area, normal);
 
         double gauss = gauss_curvature(one_ring_neightbors, area);
 
@@ -45,7 +51,9 @@ namespace viennamesh
 
         double k_2 = k2(gauss, mean);
 
-        return Curves{gauss, mean, k_1, k_2};
+        return Curves{gauss, mean, k_1, k_2, area, normal};
+
+     
 
 
 
@@ -57,11 +65,11 @@ namespace viennamesh
 
         std::list<Triangle> one_ring_neightbors;
         one_ring_neightbors = calc_triangle_angles_sides(v);
-
+        Vector_3 normal;
 
         double area = mixed_area(one_ring_neightbors);
 
-        double mean = mean_curvature(one_ring_neightbors, area);
+        double mean = mean_curvature(one_ring_neightbors, area, normal);
 
         double gauss = gauss_curvature(one_ring_neightbors, area);
 
@@ -76,7 +84,7 @@ namespace viennamesh
 
     }
 
-    //for testing delte
+    //for testing
     double gauss_test(Vertex& v){
 
         std::list<Triangle> one_ring_neightbors;
@@ -91,21 +99,27 @@ namespace viennamesh
 
     }
 
-        //for testint delte
+        //for testing
     double mean_test(Vertex& v){
+
+        //TODO: use normals to calculate direction
 
         std::list<Triangle> one_ring_neightbors;
         one_ring_neightbors = calc_triangle_angles_sides(v);
 
         double area = mixed_area(one_ring_neightbors);
 
-        double mean = mean_curvature(one_ring_neightbors, area);
+        Vector_3 normal;
+
+        double mean = mean_curvature(one_ring_neightbors, area, normal);
 
         return mean;
     }
 
 
-    double mean_curvature(std::list<Triangle> &triangles, double area ){
+    double mean_curvature(std::list<Triangle> &triangles, double area, Vector_3 & normal_vec){
+
+        //TODO: use normals to calculate direction
 
         Vector_3 mean_curve_normal_op=Vector_3(0.0,0.0,0.0);
 
@@ -115,7 +129,6 @@ namespace viennamesh
 
         for(auto tri: triangles){
 
-            //besprechen was tun 
 
 
             if(tri.theta_border){
@@ -124,21 +137,45 @@ namespace viennamesh
 
                 mean_curve_normal_op = mean_curve_normal_op +  
                 (cot((tri).alpha) + cot(pre.beta)) *tri.prev_v;
-                //std::cout << "bi" << std::endl;
 
-        
-
-
-            //mean_curve_normal_op = mean_curve_normal_op +  
-            //(cot((tri).alpha) + cot(pre.beta)) *tri.prev_v;
 
             pre = tri;
         }
 
         mean_curve_normal_op = (1/(2*area)) * mean_curve_normal_op;
 
+
+        //TODO: probably save normal vector somewhere else think about it later
+
+        double mean_c = std::sqrt(mean_curve_normal_op.squared_length())/2;
+
         
-        return std::sqrt(mean_curve_normal_op.squared_length())/2;
+        //if the 1-ring neighbourhood is not flat we can use the mean curvature normal operator as normal vector
+        //if(mean_c > 0.1){
+             //normal_vec = (mean_curve_normal_op/std::sqrt(mean_curve_normal_op.squared_length()));
+        //}else{
+            //the one ring neighbourhood is flat so we have to calculate the normal by hand
+
+            double num_normals = 0;
+            Vector_3 averaged_normals = Vector_3(0.0,0.0,0.0);
+
+            for(auto tri: triangles){
+
+                Vector_3 tmp_normal;
+
+                tmp_normal = cross_product(tri.at_v, tri.prev_v);
+
+                averaged_normals = averaged_normals + (tmp_normal/std::sqrt(tmp_normal.squared_length()));
+
+                num_normals++;
+            }
+
+            //TODO go in other direction!!!!
+
+            normal_vec = -1*(averaged_normals/num_normals);
+        //}
+        
+        return mean_c;
 
     }
 
@@ -164,17 +201,17 @@ namespace viennamesh
             at++;
         }while(at != end);
 
-     
+        Vector_3 test;
 
         double area = mixed_area(one_ring_neightbors);
 
-        double mean = mean_curvature(one_ring_neightbors, area);
+        //double mean = mean_curvature(one_ring_neightbors, area, test);
 
         double gauss = gauss_curvature(one_ring_neightbors, area);
 
-        double k_1 = k1(gauss, mean);
+        //double k_1 = k1(gauss, mean);
 
-        double k_2 = k2(gauss, mean);
+        //double k_2 = k2(gauss, mean);
 
         Vector_3 mean_curve_normal_op=Vector_3(0.0,0.0,0.0);
 
@@ -244,11 +281,11 @@ namespace viennamesh
 
        // out << "area: " << area << std::endl;
 
-        out << "gaus: " << gauss << std::endl;
+        /*out << "gaus: " << gauss << std::endl;
 
         out << "mean: " << mean << std::endl;
 
-      /*  out << "k1:  " << k_1 << std::endl;
+        out << "k1:  " << k_1 << std::endl;
 
         out << "k2:  " << k_2 << std::endl;*/
 
