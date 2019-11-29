@@ -38,17 +38,14 @@ if ( NOT Boost_FOUND )
 endif()
 
 
-
-
 VIENNAMESH_ADD_PLUGIN(cgal_module plugin.cpp
- 		      cgal_mesh.cpp
-          cgal_mesh_simplification.cpp
-		      cgal_automatic_mesh_simplification.cpp
+ 		      		cgal_mesh.cpp
+          			#cgal_mesh_simplification.cpp
+		      		cgal_automatic_mesh_simplification.cpp
 					cgal_curve.cpp
 					cgal_remove_short_edges.cpp
 					cgal_compare_curvature_calculations.cpp 
 					cgal_simplify_curve.cpp
 					#needs to be added for .hpp
 					curvature_calculator.cpp
-					cgal_data_creator.cpp
 					)

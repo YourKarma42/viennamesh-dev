@@ -30,6 +30,9 @@
 #include <vtkIdList.h>
 #include <vtkPolyData.h>
 
+#include "silvaco_str_reader.hpp"
+
+#include "lagacy_VTK_reader.hpp"
 
 #include "viennameshpp/core.hpp"
 
@@ -200,6 +203,21 @@ namespace viennamesh
         success = true;
         break;        
       }
+
+    case SILVACO_STR:
+      {
+         info(5) << "Found .str extension, using ViennaGrid str reader" << std::endl;
+         info(5) << "Warning: At the moment only .str files that wehre exported as ASCII files are supported" << std::endl;
+
+        viennagrid::io::silvaco_str_reader reader;
+        
+        reader(output_mesh(), filename.c_str());
+       
+        success = true;
+        break;
+
+      }
+
     case GRD:
       {
         try
@@ -241,6 +259,20 @@ namespace viennamesh
       }
     default:
       {
+        //________________________________________Development area_______________________________________________________________________________________________________________________
+
+        viennagrid::io::lagacy_VTK_reader reader;
+        
+        reader(output_mesh(), filename.c_str());
+
+        error(1) << "TMP WILL CREATE OWN FILE TYPE" << std::endl;
+
+        set_output("mesh", output_mesh);
+
+        return success;
+
+        //________________________________________Development area_______________________________________________________________________________________________________________________
+        
         error(1) << "Unsupported extension: " << lexical_cast<std::string>(filetype) << std::endl;
         return false;
       }

@@ -22,6 +22,9 @@
 #include <CGAL/Plane_3.h>
 
 
+#include <unordered_map>
+
+
 #ifndef CGALLIBRARY
 #define CGALLIBRARY
 #endif

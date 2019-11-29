@@ -179,6 +179,7 @@ void viennamesh_context_t::load_plugins_in_directory(std::string directory_name)
     while ((ent = readdir (dir)) != NULL)
     {
       std::string filename = ent->d_name;
+
       if ( (filename.size() > 3) && (filename.find(".so") == filename.size()-3) )
         plugins_in_directory.push_back( filename );
     }

@@ -75,6 +75,11 @@ target_link_libraries(_mesh_quality viennameshpp)
 add_executable(_compare_curvatur_calculation _compare_curvatur_calculation.cpp)
 target_link_libraries(_compare_curvatur_calculation viennameshpp)
 
+add_executable(_convert_silvaco_file _convert_silvaco_file.cpp)
+target_link_libraries(_convert_silvaco_file viennameshpp)
+
+
 #add_executable(_data_generator _data_generator.cpp)
 #target_link_libraries(_data_generator viennameshpp)
 
+                        

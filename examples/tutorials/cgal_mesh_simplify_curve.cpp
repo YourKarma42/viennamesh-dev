@@ -14,63 +14,54 @@ int main(int argc, char **argv)
     
     if (argc < 2)
     {
-        std::cout << "1 argument required: 1 meshes to compare curvature" << std::endl;
+        std::cout << "at least 2 argument required:" << std::endl;
+        std::cout << "for option p: 'path to mesh' 'p'" << std::endl;
+        std::cout << "for option lt: 'path to mesh' 'lt' 'number of remaining triangles'" << std::endl;
+        std::cout << "for option m: 'path to mesh' 'm' 'start length' 'end length' 'step size' 'flat boundary'" << std::endl;
         return 0;
     }
 
     std::string meshPath(argv[1]);
 
-    double ratio = 0.5;
-
     std::string policy("m");
-    
 
     if (argc > 2){
-        ratio = atof(argv[2]);
-        
-    }
-        
-
-    if (argc > 3){
-        std::string new_pol(argv[3]);
+        std::string new_pol(argv[2]);
         if(new_pol == "m" || new_pol == "lt" || new_pol == "p"){
             policy = new_pol;
         }else{
             std::cout << "Wrong argument in 3: must be lt or m or p" << std::endl;
-            std::cout << "Using standard m" << std::endl;
+            return 0;
         }
+              
+    }
+        
+
+       
+    double arg1 = 0.0;
+
+    if (argc > 3){
+        arg1 = atof(argv[3]);
     }
 
-    int anz_zones = 0;
+    double end_length = 0.0;
+    double step_size = 0.0;
+    double flat_boundary = 0.0;
 
-    double zone_size_mult = 0.0;
-
-    std::list<double>  zones;
-    
     if (argc > 4){
-
-      anz_zones = atoi(argv[4]);
-
-      zone_size_mult = atof(argv[5]);
-
-      for(int i = 0; i<anz_zones; i++){
-          zones.push_back(atof(argv[6+i]));
-      }
-
-    
-
+        end_length = atof(argv[4]);
+        step_size = atof(argv[5]);
+        flat_boundary = atof(argv[6]);
     }
 
 
-
-
-
-    std::cout << "choosen ratio is: " << ratio << std::endl;
-
-    std::cout << "choosen policy: " << policy << std::endl;
+    std::cout << "choosen policy       : " << policy << std::endl;
+    std::cout << "choosen start length : " << arg1 << std::endl;
+    std::cout << "choosen end length   : " << end_length << std::endl;
+    std::cout << "choosen step length  : " << step_size << std::endl;
+    std::cout << "choosen flat boundary: " << flat_boundary << std::endl;
 
     viennamesh::context_handle context;
-
 
     //viennamesh reader
     viennamesh::algorithm_handle mesh_reader = context.make_algorithm("mesh_reader");
@@ -78,33 +69,21 @@ int main(int argc, char **argv)
     mesh_reader.run();
 
 
-    viennamesh::algorithm_handle test = context.make_algorithm("cgal_simplify_curve");
+    viennamesh::algorithm_handle simplification = context.make_algorithm("cgal_simplify_curve");
 
-    test.set_default_source(mesh_reader);
+    simplification.set_default_source(mesh_reader);
 
 
-    test.set_input("ratio", ratio);
-    test.set_input("policy", policy);
-    test.set_input("zone_multiplicator", zone_size_mult);
-
-    test.set_input("anz_zones", anz_zones);
-
-    int i = 0;
-
-    for(auto z: zones){
-
-        std::string zone = "zone" + std::to_string(i);
-
-        test.set_input(zone, z);
-
-        i++;
-          
-    }
-
+    simplification.set_input("ratio", arg1);
+    simplification.set_input("policy", policy);
+    simplification.set_input("end_length", end_length);
+    simplification.set_input("step_size", step_size);
+    simplification.set_input("flat_boudary", flat_boundary);
     
 
-    test.run();
+    simplification.run();
 
+    
 //komisch nochmal überlegen
     std::stringstream file_name_tmp;
     file_name_tmp << std::string(basename(argv[1])).substr(0,std::string(basename(argv[1])).find_last_of("/"));
@@ -120,35 +99,14 @@ int main(int argc, char **argv)
     std::stringstream file_name;
     file_name << seglist[0] << "_" << seglist[1];
 
-    std::string output_filename;
-    output_filename += file_name.str();
-    output_filename += "_params.txt";
-
-    //create csv file handle
-    std::ofstream output;
-    output.open(output_filename.c_str());
-
-        output << policy << std::endl;
-        output << ratio << std::endl;
-
-        if(policy == "m"){
-
-            output << "Zone mult: "<< zone_size_mult << std::endl;
-
-            output << "Zone sizes:" << std::endl;
-            for(auto n: zones){
-                output << n << std::endl;
-            }
-        }
-
-    output.close();
+    std::cout << file_name.str() << std::endl;
 
 
 
 
     //the resulting coarsened mesh is written to a vtu file.
     viennamesh::algorithm_handle mesh_writer = context.make_algorithm("mesh_writer");
-    mesh_writer.set_default_source(test);
+    mesh_writer.set_default_source(simplification);
     mesh_writer.set_input( "filename", file_name.str() + "_" + policy + "_simpl.vtu" );
     mesh_writer.run();
 

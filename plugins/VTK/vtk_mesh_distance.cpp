@@ -61,9 +61,11 @@ namespace viennamesh {
             output_filename_csv += filename.substr(found+1, find_vtu-found-1);;
             output_filename_csv += "_distance.csv";
 
-            std::string output_filename_vtu = BaseOutputPath;
-            output_filename_vtu += filename.substr(found+1, find_vtu-found-1);
-            output_filename_vtu += "_distance.vtu";
+            std::string output_filename_vtu = "Distances.vtu";
+
+            //std::string output_filename_vtu = BaseOutputPath;
+            //output_filename_vtu += filename.substr(found+1, find_vtu-found-1);
+            //output_filename_vtu += "_distance.vtu";
 
             //create csv file handle
             ofstream csv;

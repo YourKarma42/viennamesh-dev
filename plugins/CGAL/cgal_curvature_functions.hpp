@@ -1,5 +1,7 @@
 
 
+
+
 /* ============================================================================
    Copyright (c) 2011-2014, Institute for Microelectronics,
                             Institute for Analysis and Scientific Computing,
@@ -29,7 +31,7 @@
 
 #include <unordered_map>
 
-#include <CGAL/Curvature_policies/cgal_hash_points.hpp>
+//#include <CGAL/Curvature_policies/cgal_hash_points.hpp>
 
 //curvature testfunction
 //#include <CGAL/curve_calc_dev/curve_test_1.hpp>
@@ -269,7 +271,7 @@ namespace viennamesh
 
     }
 
-    std::string curvature_output(std::unordered_map<Point_3, viennamesh::cgal::vertex_statistics, viennamesh::cgal::Point_3_Hash, viennamesh::cgal::Point_3_Equal> & m){
+    /*std::string curvature_output(std::unordered_map<Point_3, viennamesh::cgal::vertex_statistics, viennamesh::cgal::Point_3_Hash, viennamesh::cgal::Point_3_Equal> & m){
         std::stringstream  out;
 
         double max_1 = 0.0;
@@ -284,7 +286,7 @@ namespace viennamesh
             
             if((it.second).curvature_2 > max_2)
                 max_2 = (it.second).curvature_2;
-
+        
             if((it.second).curvature_1 < min_1)
                 min_1 = (it.second).curvature_1;
             
@@ -308,7 +310,7 @@ namespace viennamesh
 
         return out.str();
 
-    }
+    }*/
 
 //_____________________________________ END MY STUFF _________________________________________________________________
 

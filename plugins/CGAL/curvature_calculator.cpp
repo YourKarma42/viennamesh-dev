@@ -35,6 +35,7 @@ namespace viennamesh
 
     Curves calc_curvatures(Vertex& v){
 
+
         std::list<Triangle> one_ring_neightbors;
         one_ring_neightbors = calc_triangle_angles_sides(v);
 
@@ -54,9 +55,6 @@ namespace viennamesh
         return Curves{gauss, mean, k_1, k_2, area, normal};
 
      
-
-
-
 
     }
 
@@ -159,7 +157,7 @@ namespace viennamesh
             double num_normals = 0;
             Vector_3 averaged_normals = Vector_3(0.0,0.0,0.0);
 
-            for(auto tri: triangles){
+           /* for(auto tri: triangles){
 
                 Vector_3 tmp_normal;
 
@@ -172,7 +170,7 @@ namespace viennamesh
 
             //TODO go in other direction!!!!
 
-            normal_vec = -1*(averaged_normals/num_normals);
+            normal_vec = -1*(averaged_normals/num_normals);*/
         //}
         
         return mean_c;

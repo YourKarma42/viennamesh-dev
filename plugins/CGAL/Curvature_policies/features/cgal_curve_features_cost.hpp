@@ -48,9 +48,12 @@ public:
 
 public:
 
- int b;
+  int b;
 
-   double max_size;
+  double max_size;
+
+  //for the moment a dummy value
+  double max_value = std::numeric_limits<double>::max();
 
   Curvature_features_cost(double ms,viennamesh::cgal::cgal_mesh_analytics<ECM>  & a,  LindstromTurk_params const& aParams = LindstromTurk_params()) 
   : max_size(ms), analytics(a),  mParams(aParams) {}
@@ -65,19 +68,15 @@ public:
   {
     typedef optional<typename Profile::FT> result_type;
 
-    //for the moment a dummy value
-    double max_value = 150;
 
+    //int area_v0 = analytics.get_transition_area(aProfile.v0());
 
-
-    int area_v0 = analytics.get_transition_area(aProfile.v0());
-
-    int area_v1 = analytics.get_transition_area(aProfile.v1());
-
-
+    //int area_v1 = analytics.get_transition_area(aProfile.v1());
 
 
     if(analytics.get_transition_distance(aProfile.v0()) >= max_size && analytics.get_transition_distance(aProfile.v1()) >= max_size) {
+      //auto a = result_type(LindstromTurkCore<ECM,Profile>(mParams,aProfile).compute_cost(aPlacement));
+
       return LindstromTurkCore<ECM,Profile>(mParams,aProfile).compute_cost(aPlacement);
     }
 
